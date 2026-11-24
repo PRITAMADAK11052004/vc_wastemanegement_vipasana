@@ -82,6 +82,7 @@ function buildNavigation() {
   }));
 }
 function navigate(page) {
+  stopReportCamera();
   activePage = page;
   const labels = {dashboard:'Overview',report:'Report an issue',complaints:currentUser.role==='resident'?'My complaints':'Complaint inbox',map:'Geographic overview',teams:'Collection teams',tasks:'Assigned tasks'};
   $('#page-title').textContent = labels[page] || 'Workspace';
@@ -223,7 +224,7 @@ async function renderReportForm() {
           <div class="field"><label for="report-area">Neighbourhood / area *</label><input id="report-area" name="area" required maxlength="100" placeholder="e.g. Lake Town, Block B" value="${escapeHtml(currentUser.area||'')}"></div>
           <div class="field field-full"><label for="report-description">Describe the problem *</label><textarea id="report-description" name="description" minlength="10" maxlength="1200" required placeholder="Describe what you observed, how much waste is present and any nearby landmark…"></textarea><span class="field-hint">10–1,200 characters. Avoid including personal or sensitive information.</span></div>
           <div class="field field-full"><label for="report-address">Nearby landmark (optional)</label><input id="report-address" name="address" maxlength="180" placeholder="e.g. Opposite the community market"></div>
-          <div class="field field-full"><label>Photograph (optional)</label><label class="upload-box" for="report-image"><span style="font-size:24px">⇧</span><strong>Choose a photo of the waste issue</strong><span>JPG, PNG or WEBP · Maximum 8 MB</span><input id="report-image" name="image" type="file" accept="image/png,image/jpeg,image/webp"><img id="report-preview" class="upload-preview hidden" alt="Selected report photograph"></label></div>
+          <div class="field field-full"><label>Photograph (optional)</label><label class="upload-box" for="report-image"><span style="font-size:24px">⇧</span><strong>Choose a photo of the waste issue</strong><span>JPG, PNG or WEBP · Maximum 8 MB</span><input id="report-image" name="image" type="file" accept="image/png,image/jpeg,image/webp"><img id="report-preview" class="upload-preview hidden" alt="Selected report photograph"></label><div class="camera-capture-actions"><button class="btn btn-outline btn-small" type="button" id="open-report-camera">◎ Take a photo with camera</button></div><section id="report-camera-panel" class="camera-capture-panel hidden" aria-label="Live camera capture"><div class="camera-capture-frame"><video id="report-camera-video" autoplay playsinline muted></video></div><div class="camera-capture-controls"><button class="btn btn-primary btn-small" type="button" id="capture-report-photo" disabled>Capture photo</button><button class="btn btn-outline btn-small" type="button" id="close-report-camera">Cancel</button></div><p id="report-camera-message" class="field-hint" role="status" aria-live="polite">Allow camera access to take a photograph of the issue.</p></section></div>
           <div class="field field-full"><label>Selected coordinates *</label><input id="report-coordinates" readonly placeholder="Click on the map or use your current location"><span class="field-hint">Choose the location as accurately as possible. The map point is required.</span></div>
         </div>
         <div class="notice-box"><b>Before you submit</b>Only submit genuine waste-related issues. The report location is shared with authorised administrators and assigned collection staff to support resolution.</div>
@@ -232,7 +233,10 @@ async function renderReportForm() {
       <aside class="card map-card"><div class="map-card-head"><b>Pinpoint the issue location</b><p>Click directly on the map to place the report marker.</p><div class="map-tools"><button class="btn btn-secondary btn-small" type="button" id="use-location">◎ Use my location</button><button class="btn btn-outline btn-small" type="button" id="clear-location">Clear pin</button></div></div><div id="report-map" class="map-container"></div><div class="map-instruction">Map data © OpenStreetMap contributors. Location permission is optional; manual selection is available.</div></aside>
     </form>`;
   $('#report-cancel').addEventListener('click',()=>navigate('dashboard'));
-  $('#report-image').addEventListener('change',previewReportImage);
+  $('#report-image').addEventListener('change',event=>{previewReportImage(event);stopReportCamera();});
+  $('#open-report-camera').addEventListener('click',startReportCamera);
+  $('#capture-report-photo').addEventListener('click',captureReportPhoto);
+  $('#close-report-camera').addEventListener('click',stopReportCamera);
   $('#report-form').addEventListener('submit',submitReport);
   const map = createMap('report-map');
   if (map) map.on('click', e=>setSelectedLocation(e.latlng.lat,e.latlng.lng));
@@ -261,6 +265,124 @@ function useCurrentLocation() {
     showToast(err.code===1?'Location permission was denied. Select a point on the map instead.':'Could not determine your location. Select a point on the map instead.','error');
   },{enableHighAccuracy:true,timeout:10000,maximumAge:30000});
 }
+let reportCameraStream = null;
+
+async function startReportCamera() {
+  const panel = $('#report-camera-panel');
+  const video = $('#report-camera-video');
+  const message = $('#report-camera-message');
+  const openButton = $('#open-report-camera');
+  const captureButton = $('#capture-report-photo');
+
+  if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+    panel.classList.remove('hidden');
+    message.textContent = 'Camera access requires HTTPS (or localhost) and a supported browser. You can still choose a photo from your device.';
+    showToast('Camera access is unavailable. Choose a photo from your device instead.', 'error');
+    return;
+  }
+
+  stopReportCamera();
+  panel.classList.remove('hidden');
+  captureButton.disabled = true;
+  openButton.disabled = true;
+  message.textContent = 'Requesting camera permission…';
+
+  try {
+    reportCameraStream = await navigator.mediaDevices.getUserMedia({
+      audio: false,
+      video: {
+        facingMode: { ideal: 'environment' },
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      }
+    });
+    video.srcObject = reportCameraStream;
+    await video.play();
+    captureButton.disabled = false;
+    message.textContent = 'Camera is ready. Position the waste issue in the frame and capture the photograph.';
+  } catch (error) {
+    stopReportCamera();
+    panel.classList.remove('hidden');
+    captureButton.disabled = true;
+    if (error && (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError')) {
+      message.textContent = 'Camera permission was denied. Allow camera access in your browser settings, or choose a photo from your device.';
+    } else if (error && (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError')) {
+      message.textContent = 'No camera was found on this device. You can still choose a photo from your device.';
+    } else if (error && error.name === 'NotReadableError') {
+      message.textContent = 'The camera is being used by another application. Close that application and try again.';
+    } else {
+      message.textContent = 'The camera could not be started. Check browser permission and try again, or choose a photo from your device.';
+    }
+  } finally {
+    openButton.disabled = false;
+  }
+}
+
+function stopReportCamera() {
+  if (reportCameraStream) {
+    reportCameraStream.getTracks().forEach(track => track.stop());
+    reportCameraStream = null;
+  }
+  const video = $('#report-camera-video');
+  if (video) video.srcObject = null;
+  const panel = $('#report-camera-panel');
+  if (panel) panel.classList.add('hidden');
+  const captureButton = $('#capture-report-photo');
+  if (captureButton) captureButton.disabled = true;
+  const openButton = $('#open-report-camera');
+  if (openButton) openButton.disabled = false;
+}
+
+function captureReportPhoto() {
+  const video = $('#report-camera-video');
+  const input = $('#report-image');
+  if (!video || !video.videoWidth || !video.videoHeight || !reportCameraStream) {
+    showToast('The camera is not ready yet. Please wait for the live preview.', 'error');
+    return;
+  }
+
+  const maxDimension = 1600;
+  const scale = Math.min(1, maxDimension / Math.max(video.videoWidth, video.videoHeight));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+  canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+  const context = canvas.getContext('2d');
+  if (!context) {
+    showToast('Could not capture the camera frame. Please try again.', 'error');
+    return;
+  }
+  context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  canvas.toBlob(blob => {
+    if (!blob) {
+      showToast('Could not create the photograph. Please try again.', 'error');
+      return;
+    }
+    if (blob.size > 8 * 1024 * 1024) {
+      showToast('Captured image is larger than 8 MB. Please try again.', 'error');
+      return;
+    }
+
+    const file = new File([blob], `cleantrack-report-${Date.now()}.jpg`, {
+      type: 'image/jpeg',
+      lastModified: Date.now()
+    });
+
+    try {
+      const transfer = new DataTransfer();
+      transfer.items.add(file);
+      input.files = transfer.files;
+    } catch (error) {
+      showToast('This browser could not attach the captured photo. Please choose an image from your device.', 'error');
+      return;
+    }
+
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+    stopReportCamera();
+    showToast('Photograph captured and attached to your report.');
+  }, 'image/jpeg', 0.88);
+}
+
 function previewReportImage(event) {
   const file=event.target.files[0];const img=$('#report-preview');
   if(!file){img.classList.add('hidden');return;}
@@ -269,6 +391,7 @@ function previewReportImage(event) {
 }
 async function submitReport(event) {
   event.preventDefault();
+  stopReportCamera();
   if(!selectedLocation){showToast('Select the waste issue location on the map.','error');return;}
   const form=$('#report-form');const fd=new FormData(form);
   fd.set('latitude',selectedLocation.latitude);fd.set('longitude',selectedLocation.longitude);
@@ -437,7 +560,7 @@ $$('[data-demo]').forEach(btn=>btn.addEventListener('click',()=>{
   const email=btn.dataset.demo==='resident'?'resident@cleantrack.demo':btn.dataset.demo==='admin'?'admin@cleantrack.demo':'worker@cleantrack.demo';
   $('#login-email').value=email;$('#login-password').value='demo123';$('#login-form').requestSubmit();
 }));
-$('#logout-button').addEventListener('click',async()=>{try{await api('/logout',{method:'POST',body:JSON.stringify({})});}catch{}currentUser=null;csrfToken=null;$('#app-shell').classList.add('hidden');$('#login-screen').classList.add('hidden');$('#landing-page')?.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});});
+$('#logout-button').addEventListener('click',async()=>{stopReportCamera();try{await api('/logout',{method:'POST',body:JSON.stringify({})});}catch{}currentUser=null;csrfToken=null;$('#app-shell').classList.add('hidden');$('#login-screen').classList.add('hidden');$('#landing-page')?.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});});
 $('#notification-button').addEventListener('click',toggleNotifications);
 $('#mobile-menu').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
 $('#detail-modal').addEventListener('click',event=>{if(event.target.id==='detail-modal')closeDetail();});
@@ -611,3 +734,6 @@ document.addEventListener('click',event=>{if(!event.target.closest('#notificatio
   renderFeature(0);
   startFeatureTimer();
 })();
+
+
+window.addEventListener('pagehide', stopReportCamera);

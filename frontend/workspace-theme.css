@@ -161,6 +161,19 @@
 :root[data-theme="dark"] #app-shell .leaflet-bar { border-color: #2A3B28; }
 :root[data-theme="dark"] #app-shell .theme-toggle { background: #1D2E1C; }
 
+
+:root[data-theme="dark"] #app-shell .eyebrow-green { color: #7BC462; }
+:root[data-theme="dark"] #app-shell .nav-icon { color: #9EB09B; }
+:root[data-theme="dark"] #app-shell .avatar-mint,
+:root[data-theme="dark"] #app-shell .avatar-blue,
+:root[data-theme="dark"] #app-shell .avatar-amber { background: #1D2E1C; color: #7BC462; }
+:root[data-theme="dark"] #app-shell .search-box:before { color: #9EB09B; }
+:root[data-theme="dark"] #app-shell .map-fallback { color: #9EB09B; }
+:root[data-theme="dark"] #app-shell .form-error { color: #F0A49C; }
+:root[data-theme="dark"] #app-shell .legend-dot { box-shadow: 0 0 0 2px #162016; }
+:root[data-theme="dark"] #app-shell .notice-box b { color: #7BC462; }
+:root[data-theme="dark"] #app-shell .priority-pill { border: 1px solid #2A3B28; }
+
 /* Keep the common theme control usable in the shared workspace topbar. */
 .theme-toggle-workspace { position: relative; flex: 0 0 68px; }
 @media (max-width: 760px) {
@@ -168,3 +181,14 @@
   #app-shell .theme-toggle-workspace { width: 62px; height: 36px; flex-basis: 62px; }
   :root[data-theme="dark"] #app-shell .theme-toggle-workspace .theme-toggle-knob { transform: translateX(24px); }
 }
+
+/* Resident report camera capture. Existing upload styles remain unchanged. */
+#app-shell .camera-capture-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 10px; }
+#app-shell .camera-capture-panel { margin-top: 12px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--bright-white); }
+#app-shell .camera-capture-frame { width: 100%; max-height: 360px; overflow: hidden; display: grid; place-items: center; border-radius: 8px; background: #0E140E; }
+#app-shell .camera-capture-frame video { display: block; width: 100%; max-height: 360px; object-fit: contain; background: #0E140E; }
+#app-shell .camera-capture-controls { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+#app-shell .camera-capture-controls .btn:disabled { opacity: .55; cursor: not-allowed; transform: none; }
+#app-shell .camera-capture-panel .field-hint { margin: 9px 0 0; line-height: 1.5; }
+:root[data-theme="dark"] #app-shell .camera-capture-panel { background: #162016; border-color: #2A3B28; }
+:root[data-theme="dark"] #app-shell .camera-capture-panel .field-hint { color: #9EB09B; }
