@@ -9,6 +9,7 @@ let currentMap = null;
 let selectedLocation = null;
 let cachedComplaints = [];
 let selectedRating = 5;
+let currentDetailId = null;
 
 const $ = (selector, root = document) => root.querySelector(selector);
 const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -23,12 +24,12 @@ function priorityPill(priority) { return `<span class="priority-pill ${priorityC
 function dateShort(value) {
   if (!value) return '—';
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleString([], {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleString(window.CleanTrackI18n?.locale?.() || undefined, {day:'numeric', month:'short', hour:'2-digit', minute:'2-digit'});
 }
 function dateLong(value) {
   if (!value) return '—';
   const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleString([], {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+  return Number.isNaN(d.getTime()) ? value : d.toLocaleString(window.CleanTrackI18n?.locale?.() || undefined, {day:'numeric', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
 }
 function showToast(message, type = 'success') {
   const toast = document.createElement('div');
@@ -90,6 +91,8 @@ async function api(path, options = {}) {
   return payload;
 }
 function setUser(user, token) {
+  window.CleanTrackLanguageUser = user.id ?? user.email ?? null;
+  window.CleanTrackI18n?.setUserContext?.(window.CleanTrackLanguageUser);
   window.CleanTrackIntro?.close?.();
   currentUser = user;
   csrfToken = token;
@@ -169,7 +172,7 @@ function addComplaintMarker(map, complaint, focus = false) {
   if (!map || !Number.isFinite(Number(complaint.latitude)) || !Number.isFinite(Number(complaint.longitude))) return;
   const color = complaint.status === 'Closed' ? '#4b9a70' : complaint.priority === 'Critical' || complaint.priority === 'High' ? '#d45b51' : '#d39a37';
   const marker = L.circleMarker([Number(complaint.latitude), Number(complaint.longitude)], {radius:8,color:'#fff',weight:2,fillColor:color,fillOpacity:.96}).addTo(map);
-  marker.bindPopup(`<div class="popup-title">${escapeHtml(complaint.public_id)} · ${escapeHtml(complaint.category)}</div><div class="popup-sub">${escapeHtml(complaint.area)} · ${escapeHtml(complaint.status)}</div>`);
+  marker.bindPopup(`<div class="popup-title">${escapeHtml(complaint.public_id)} · ${escapeHtml(complaint.category)}</div><div class="popup-sub"><span class="user-submitted">${escapeHtml(complaint.area)}</span> · ${escapeHtml(complaint.status)}</div>`);
   marker.on('click', () => openComplaint(complaint.id));
   if (focus) map.setView([Number(complaint.latitude), Number(complaint.longitude)], 15);
   return marker;
@@ -184,8 +187,10 @@ async function loadComplaints(filters = {}) {
 function pageHeading(eyebrow, title, subtitle, action = '') {
   return `<div class="page-heading"><div><span class="eyebrow eyebrow-green">${eyebrow}</span><h1>${title}</h1><p>${subtitle}</p></div>${action ? `<div class="heading-actions">${action}</div>` : ''}</div>`;
 }
+function displayNumber(value) { return window.CleanTrackI18n?.formatNumber?.(value) ?? value; }
 function statCard(label, value, foot, icon, iconClass) {
-  return `<div class="card stat-card"><div class="stat-top"><span>${label}</span><span class="stat-icon ${iconClass}">${icon}</span></div><div class="stat-value">${value}</div><div class="stat-foot">${foot}</div></div>`;
+  const displayValue = typeof value === 'number' ? displayNumber(value) : value;
+  return `<div class="card stat-card"><div class="stat-top"><span>${label}</span><span class="stat-icon ${iconClass}">${icon}</span></div><div class="stat-value">${displayValue}</div><div class="stat-foot">${foot}</div></div>`;
 }
 function complaintRow(c) {
   return `<tr>
@@ -213,11 +218,11 @@ async function renderDashboard() {
           ${statCard('Total reports',d.total,'All registered reports','▤','icon-green')}
           ${statCard('Awaiting action',d.submitted,'Submitted, review or information','◷','icon-amber')}
           ${statCard('Active work',d.in_progress,'Assigned, in progress or awaiting check','↗','icon-blue')}
-          ${statCard('Verified closed',d.closed,`${d.resolution_rate}% resolution rate`,'✓','icon-green')}
+          ${statCard('Verified closed',d.closed,`${displayNumber(d.resolution_rate)}% resolution rate`,'✓','icon-green')}
         </div>
         <div class="content-grid">
-          <section class="card"><div class="card-header"><div><div class="card-title">Reports by category</div><div class="card-subtitle">Where residents are reporting issues</div></div><span class="chart-legend">${d.by_category.length} categories</span></div><div class="card-body">${d.by_category.length?d.by_category.map(x=>`<div class="category-row"><span class="category-name">${escapeHtml(x.category)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(3,100*x.count/maxCat)}%"></div></div><span class="category-count">${x.count}</span></div>`).join(''):'<div class="empty-state">No category data yet.</div>'}</div></section>
-          <section class="card"><div class="card-header"><div><div class="card-title">Operations pulse</div><div class="card-subtitle">Items that may need attention</div></div><span class="stat-icon icon-amber">✦</span></div><div class="card-body"><div class="mini-metric"><span>Overdue over 48 hours</span><b>${d.overdue}</b></div><div class="mini-metric"><span>Reopened reports</span><b>${d.reopened}</b></div><div class="mini-metric"><span>Average time to close</span><b>${d.average_resolution_hours===null?'—':d.average_resolution_hours+' hrs'}</b></div><div class="mini-metric"><span>Collection team members</span><b>${d.team_workload.length}</b></div><div class="notice-box"><b>Operational reminder</b>Review high-priority and overdue complaints before allocating new work.</div></div></section>
+          <section class="card"><div class="card-header"><div><div class="card-title">Reports by category</div><div class="card-subtitle">Where residents are reporting issues</div></div><span class="chart-legend">${displayNumber(d.by_category.length)} categories</span></div><div class="card-body">${d.by_category.length?d.by_category.map(x=>`<div class="category-row"><span class="category-name">${escapeHtml(x.category)}</span><div class="bar-track"><div class="bar-fill" style="width:${Math.max(3,100*x.count/maxCat)}%"></div></div><span class="category-count">${displayNumber(x.count)}</span></div>`).join(''):'<div class="empty-state">No category data yet.</div>'}</div></section>
+          <section class="card"><div class="card-header"><div><div class="card-title">Operations pulse</div><div class="card-subtitle">Items that may need attention</div></div><span class="stat-icon icon-amber">✦</span></div><div class="card-body"><div class="mini-metric"><span>Overdue over 48 hours</span><b>${displayNumber(d.overdue)}</b></div><div class="mini-metric"><span>Reopened reports</span><b>${displayNumber(d.reopened)}</b></div><div class="mini-metric"><span>Average time to close</span><b>${d.average_resolution_hours===null?'—':displayNumber(d.average_resolution_hours)+' hrs'}</b></div><div class="mini-metric"><span>Collection team members</span><b>${displayNumber(d.team_workload.length)}</b></div><div class="notice-box"><b>Operational reminder</b>Review high-priority and overdue complaints before allocating new work.</div></div></section>
         </div>
         <section class="card table-card"><div class="card-header"><div><div class="card-title">Latest reports</div><div class="card-subtitle">Recently submitted or updated complaints</div></div><button class="section-link" data-go="complaints">View all →</button></div>${renderTable(recent)}</section>`;
       bindGoButtons();
@@ -227,7 +232,7 @@ async function renderDashboard() {
       const closed = complaints.filter(c=>c.status==='Closed').length;
       const recent = complaints.slice(0,5);
       content.innerHTML = `${pageHeading('RESIDENT SPACE',`Hello, ${escapeHtml(currentUser.name.split(' ')[0])}.`,'Report a local waste issue or check the progress of a report you have already made.','<button class="btn btn-primary" data-go="report">＋ Report an issue</button>')}
-        <div class="stat-grid">${statCard('Your reports',complaints.length,'Reports submitted by you','▤','icon-green')}${statCard('Being handled',open,'Still in the resolution process','◷','icon-amber')}${statCard('Resolved',closed,'Verified and closed reports','✓','icon-blue')}${statCard('Your area',escapeHtml(currentUser.area||'—'),'Registered neighbourhood','⌖','icon-green')}</div>
+        <div class="stat-grid">${statCard('Your reports',complaints.length,'Reports submitted by you','▤','icon-green')}${statCard('Being handled',open,'Still in the resolution process','◷','icon-amber')}${statCard('Resolved',closed,'Verified and closed reports','✓','icon-blue')}${statCard('Your area',`<span class="user-submitted">${escapeHtml(currentUser.area||'—')}</span>`,'Registered neighbourhood','⌖','icon-green')}</div>
         <div class="content-grid"><section class="card"><div class="card-header"><div><div class="card-title">Your recent reports</div><div class="card-subtitle">Follow the progress of each issue</div></div><button class="section-link" data-go="complaints">All reports →</button></div>${recent.length?`<div class="table-wrap"><table class="data-table"><thead><tr><th>Reference</th><th>Issue</th><th>Status</th><th></th></tr></thead><tbody>${recent.map(c=>`<tr><td class="table-id">${escapeHtml(c.public_id)}</td><td><div class="table-main"><b>${escapeHtml(c.category)}</b><small>${escapeHtml(c.area)}</small></div></td><td>${statusPill(c.status)}</td><td><button class="btn btn-outline btn-small" data-open-complaint="${c.id}">Track</button></td></tr>`).join('')}</tbody></table></div>`:'<div class="empty-state"><div class="empty-icon">♧</div><b>No reports yet</b><p>When you submit an issue, its progress will appear here.</p><button class="btn btn-primary btn-small" data-go="report">Create your first report</button></div>'}</section>
         <section class="card"><div class="card-header"><div><div class="card-title">How CleanTrack works</div><div class="card-subtitle">A transparent path from report to resolution</div></div></div><div class="card-body"><div class="activity-list"><div class="activity-item"><span class="activity-dot"></span><div><b>1. Report the issue</b><p>Add a category, description, photo and map location.</p></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>2. Follow the work</b><p>Administration reviews and assigns the report.</p></div></div><div class="activity-item"><span class="activity-dot"></span><div><b>3. Verify resolution</b><p>Completion is checked before a report is closed.</p></div></div></div><div class="notice-box"><b>Privacy note</b>Your personal details are not displayed on the public issue map.</div></div></section></div>`;
       bindGoButtons(); bindComplaintButtons(content);
@@ -250,7 +255,7 @@ function renderTable(items) {
 }
 function bindGoButtons() { $$('[data-go]').forEach(button=>button.addEventListener('click',()=>navigate(button.dataset.go))); }
 function taskCard(c) {
-  return `<div class="card task-card"><div class="task-priority ${(c.priority||'').toLowerCase()}"></div><div class="task-content"><h3>${escapeHtml(c.category)} <span class="muted">· ${escapeHtml(c.public_id)}</span></h3><p>${escapeHtml(c.description)}</p><div class="task-meta"><span>⌖ ${escapeHtml(c.area)}</span><span>◷ ${escapeHtml(dateShort(c.created_at))}</span>${priorityPill(c.priority)}${statusPill(c.status)}</div><div class="task-actions"><button class="btn btn-outline btn-small" data-open-complaint="${c.id}">Task details</button>${c.status==='Assigned'?`<button class="btn btn-primary btn-small" data-start-task="${c.id}">Start task</button>`:''}</div></div></div>`;
+  return `<div class="card task-card"><div class="task-priority ${(c.priority||'').toLowerCase()}"></div><div class="task-content"><h3>${escapeHtml(c.category)} <span class="muted">· ${escapeHtml(c.public_id)}</span></h3><p>${escapeHtml(c.description)}</p><div class="task-meta"><span class="user-submitted">⌖ ${escapeHtml(c.area)}</span><span>◷ ${escapeHtml(dateShort(c.created_at))}</span>${priorityPill(c.priority)}${statusPill(c.status)}</div><div class="task-actions"><button class="btn btn-outline btn-small" data-open-complaint="${c.id}">Task details</button>${c.status==='Assigned'?`<button class="btn btn-primary btn-small" data-start-task="${c.id}">Start task</button>`:''}</div></div></div>`;
 }
 function bindTaskButtons(root=document) {
   $$('[data-start-task]',root).forEach(button=>button.addEventListener('click',async()=>{
@@ -265,7 +270,7 @@ async function renderReportForm() {
     <form id="report-form" class="form-layout" enctype="multipart/form-data">
       <section class="card form-card"><h3>Issue details</h3><p>Fields marked with an asterisk are required.</p>
         <div class="form-grid">
-          <div class="field"><label for="report-category">Waste category *</label><select id="report-category" name="category" required><option value="">Choose a category</option>${['Overflowing bin','Roadside litter','Illegal dumping','Plastic waste','Electronic waste','Construction debris','Organic waste','Other'].map(c=>`<option>${c}</option>`).join('')}</select></div>
+          <div class="field"><label for="report-category">Waste category *</label><select id="report-category" name="category" required><option value="">Choose a category</option>${['Overflowing bin','Roadside litter','Illegal dumping','Plastic waste','Electronic waste','Construction debris','Organic waste','Other'].map(c=>`<option value="${escapeHtml(c)}">${c}</option>`).join('')}</select></div>
           <div class="field"><label for="report-area">Neighbourhood / area *</label><input id="report-area" name="area" required maxlength="100" placeholder="e.g. Lake Town, Block B" value="${escapeHtml(currentUser.area||'')}"></div>
           <div class="field field-full"><label for="report-description">Describe the problem *</label><textarea id="report-description" name="description" minlength="10" maxlength="1200" required placeholder="Describe what you observed, how much waste is present and any nearby landmark…"></textarea><span class="field-hint">10–1,200 characters. Avoid including personal or sensitive information.</span></div>
           <div class="field field-full"><label for="report-address">Nearby landmark (optional)</label><input id="report-address" name="address" maxlength="180" placeholder="e.g. Opposite the community market"></div>
@@ -457,7 +462,7 @@ async function renderComplaintsPage() {
   const content=$('#page-content');
   content.innerHTML=`${pageHeading(currentUser.role==='resident'?'RESIDENT SPACE':'OPERATIONS',currentUser.role==='resident'?'My complaints':'Complaint inbox','Search, filter and open a report to see its full lifecycle.',currentUser.role==='resident'?'<button class="btn btn-primary" data-go="report">＋ New report</button>':'')}
     <section class="card table-card"><div class="card-header"><div><div class="card-title">${currentUser.role==='resident'?'Your report history':'All waste reports'}</div><div class="card-subtitle">Select a report to inspect details, history and available actions.</div></div><span id="results-count" class="demo-pill">Loading…</span></div>
-      <div class="toolbar"><div class="search-box"><input id="complaint-search" placeholder="Search reference, category or area…"></div><select id="status-filter"><option value="">All statuses</option>${['Submitted','Under Review','Needs Information','Accepted','Assigned','In Progress','Resolved – Pending Verification','Closed','Rejected','Duplicate','Reopened'].map(s=>`<option>${s}</option>`).join('')}</select><select id="category-filter"><option value="">All categories</option>${['Overflowing bin','Roadside litter','Illegal dumping','Plastic waste','Electronic waste','Construction debris','Organic waste','Other'].map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="toolbar"><div class="search-box"><input id="complaint-search" placeholder="Search reference, category or area…"></div><select id="status-filter"><option value="">All statuses</option>${['Submitted','Under Review','Needs Information','Accepted','Assigned','In Progress','Resolved – Pending Verification','Closed','Rejected','Duplicate','Reopened'].map(s=>`<option value="${escapeHtml(s)}">${s}</option>`).join('')}</select><select id="category-filter"><option value="">All categories</option>${['Overflowing bin','Roadside litter','Illegal dumping','Plastic waste','Electronic waste','Construction debris','Organic waste','Other'].map(s=>`<option value="${escapeHtml(s)}">${s}</option>`).join('')}</select></div>
       <div id="complaints-table">${'<div class="empty-state">Loading complaints…</div>'}</div></section>`;
   bindGoButtons();
   $('#complaint-search').addEventListener('input',debounce(applyComplaintFilters,250));
@@ -471,7 +476,7 @@ async function applyComplaintFilters() {
   try {
     const filters={q:$('#complaint-search')?.value||'',status:$('#status-filter')?.value||'',category:$('#category-filter')?.value||''};
     const items=await loadComplaints(filters);
-    $('#results-count').textContent=`${items.length} reports`;
+    $('#results-count').textContent=`${displayNumber(items.length)} reports`;
     $('#complaints-table').innerHTML=renderTable(items);
     bindComplaintButtons($('#complaints-table'));
   } catch(e){$('#complaints-table').innerHTML=`<div class="empty-state">${escapeHtml(e.message)}</div>`;}
@@ -482,8 +487,8 @@ async function renderMapPage() {
     <div class="map-legend"><span class="legend-item"><i class="legend-dot" style="background:#d45b51"></i>High / critical</span><span class="legend-item"><i class="legend-dot" style="background:#d39a37"></i>Medium / low</span><span class="legend-item"><i class="legend-dot" style="background:#4b9a70"></i>Closed</span></div>
     <div class="map-page-grid"><section class="card" style="overflow:hidden"><div id="all-complaints-map" class="map-large"></div></section><aside class="card map-side-list"><h3>Mapped reports <span id="map-count" class="muted"></span></h3><div id="map-side-items"><div class="muted">Loading…</div></div></aside></div>`;
   const complaints=await loadComplaints();
-  $('#map-count').textContent=`(${complaints.length})`;
-  $('#map-side-items').innerHTML=complaints.slice(0,12).map(c=>`<div class="activity-item"><span class="activity-dot" style="background:${c.status==='Closed'?'#4b9a70':c.priority==='High'||c.priority==='Critical'?'#d45b51':'#d39a37'}"></span><div><b>${escapeHtml(c.public_id)} · ${escapeHtml(c.category)}</b><p>${escapeHtml(c.area)} · ${escapeHtml(c.status)}</p><button class="text-button" data-open-complaint="${c.id}">Open report →</button></div></div>`).join('')||'<p class="muted">No report locations available.</p>';
+  $('#map-count').textContent=`(${displayNumber(complaints.length)})`;
+  $('#map-side-items').innerHTML=complaints.slice(0,12).map(c=>`<div class="activity-item"><span class="activity-dot" style="background:${c.status==='Closed'?'#4b9a70':c.priority==='High'||c.priority==='Critical'?'#d45b51':'#d39a37'}"></span><div><b>${escapeHtml(c.public_id)} · ${escapeHtml(c.category)}</b><p><span class="user-submitted">${escapeHtml(c.area)}</span> · ${escapeHtml(c.status)}</p><button class="text-button" data-open-complaint="${c.id}">Open report →</button></div></div>`).join('')||'<p class="muted">No report locations available.</p>';
   const map=createMap('all-complaints-map',[22.60,88.405],12);
   if(map){complaints.forEach(c=>addComplaintMarker(map,c));if(complaints.length){const bounds=complaints.map(c=>[Number(c.latitude),Number(c.longitude)]).filter(x=>Number.isFinite(x[0])&&Number.isFinite(x[1]));if(bounds.length>1)map.fitBounds(bounds,{padding:[35,35],maxZoom:14});}}
   bindComplaintButtons(content);
@@ -497,7 +502,7 @@ async function renderTeamsPage() {
     $('#team-cards').innerHTML=teams.teams.map(team=>{
       const assigned=complaints.filter(c=>c.assigned_to===team.id&&!['Closed','Rejected','Duplicate'].includes(c.status));
       const done=complaints.filter(c=>c.assigned_to===team.id&&c.status==='Closed').length;
-      return `<div class="card" style="padding:19px"><div style="display:flex;align-items:center;gap:12px"><span class="avatar avatar-amber">${escapeHtml(team.name.charAt(0))}</span><div><b style="font-size:12px">${escapeHtml(team.name)}</b><div class="muted" style="font-size:10px;margin-top:3px">${escapeHtml(team.area)} · Field team</div></div></div><div class="mini-metric" style="margin-top:16px"><span>Active assignments</span><b>${assigned.length}</b></div><div class="mini-metric"><span>Verified completed</span><b>${done}</b></div><div class="mini-metric"><span>Contact</span><b>${escapeHtml(team.email)}</b></div><div class="notice-box">${assigned.length?'Team has active work assigned.':'No active assignment at this time.'}</div></div>`;
+      return `<div class="card" style="padding:19px"><div style="display:flex;align-items:center;gap:12px"><span class="avatar avatar-amber">${escapeHtml(team.name.charAt(0))}</span><div><b class="user-submitted" style="font-size:12px">${escapeHtml(team.name)}</b><div class="muted user-submitted" style="font-size:10px;margin-top:3px">${escapeHtml(team.area)} · Field team</div></div></div><div class="mini-metric" style="margin-top:16px"><span>Active assignments</span><b>${assigned.length}</b></div><div class="mini-metric"><span>Verified completed</span><b>${done}</b></div><div class="mini-metric"><span>Contact</span><b>${escapeHtml(team.email)}</b></div><div class="notice-box">${assigned.length?'Team has active work assigned.':'No active assignment at this time.'}</div></div>`;
     }).join('');
   }catch(e){$('#team-cards').innerHTML=`<div class="empty-state">${escapeHtml(e.message)}</div>`;}
 }
@@ -514,6 +519,7 @@ async function renderTasksPage() {
   }catch(e){$('#task-list').innerHTML=`<div class="empty-state">${escapeHtml(e.message)}</div>`;}
 }
 async function openComplaint(id) {
+  currentDetailId = id;
   try {
     const result=await api(`/complaints/${id}`);const c=result.complaint;
     const canAdmin=currentUser.role==='admin';const isResident=currentUser.role==='resident';const isWorker=currentUser.role==='worker';
@@ -522,10 +528,10 @@ async function openComplaint(id) {
       if(['Submitted','Under Review','Needs Information','Reopened'].includes(c.status)){
         actions+=`<div class="detail-actions"><button class="btn btn-secondary btn-small" data-review="start_review">Start review</button><button class="btn btn-primary btn-small" data-review="accept">Accept report</button><button class="btn btn-outline btn-small" data-review="needs_info">Request information</button><button class="btn btn-danger btn-small" data-review="reject">Reject report</button></div>`;
       }
-      actions+=`<div class="detail-actions"><div class="field"><label>Priority</label><select id="detail-priority">${['Low','Medium','High','Critical'].map(p=>`<option ${c.priority===p?'selected':''}>${p}</option>`).join('')}</select></div><button class="btn btn-outline btn-small" id="save-priority" style="align-self:end">Save priority</button></div>`;
+      actions+=`<div class="detail-actions"><div class="field"><label>Priority</label><select id="detail-priority">${['Low','Medium','High','Critical'].map(p=>`<option value="${p}" ${c.priority===p?'selected':''}>${p}</option>`).join('')}</select></div><button class="btn btn-outline btn-small" id="save-priority" style="align-self:end">Save priority</button></div>`;
       if(['Accepted','Assigned','Reopened','In Progress'].includes(c.status)){
         const teams=await api('/teams');
-        actions+=`<div class="detail-actions"><div class="field"><label>Assign collection team</label><select id="assign-worker"><option value="">Choose team member</option>${teams.teams.map(t=>`<option value="${t.id}" ${c.assigned_to===t.id?'selected':''}>${escapeHtml(t.name)} · ${escapeHtml(t.area)}</option>`).join('')}</select></div><button class="btn btn-primary btn-small" id="assign-task" style="align-self:end">Assign / reassign</button></div>`;
+        actions+=`<div class="detail-actions"><div class="field"><label>Assign collection team</label><select id="assign-worker"><option value="">Choose team member</option>${teams.teams.map(t=>`<option class="user-submitted" value="${t.id}" ${c.assigned_to===t.id?'selected':''}>${escapeHtml(t.name)} · ${escapeHtml(t.area)}</option>`).join('')}</select></div><button class="btn btn-primary btn-small" id="assign-task" style="align-self:end">Assign / reassign</button></div>`;
       }
       if(c.status==='Resolved – Pending Verification'){
         actions+=`<div class="detail-actions"><button class="btn btn-primary btn-small" data-verify="verify">✓ Verify and close</button><button class="btn btn-danger btn-small" data-verify="return">Return for rework</button></div>`;
@@ -541,13 +547,13 @@ async function openComplaint(id) {
     if(isResident && c.status==='Closed'){
       actions+=`<div class="detail-actions" style="display:block"><b style="font-size:11px">How was the issue resolved?</b><div class="rating-row" style="margin:10px 0">${[1,2,3,4,5].map(n=>`<button data-rating="${n}" class="${n===selectedRating?'selected':''}" type="button">★ ${n}</button>`).join('')}</div><input id="feedback-comment" placeholder="Optional feedback" style="width:100%;padding:9px;border:1px solid #e1e9e3;border-radius:8px;font-size:11px"><button class="btn btn-primary btn-small" id="send-feedback" style="margin-top:9px">Submit feedback</button><button class="btn btn-outline btn-small" id="reopen-report" style="margin:9px 0 0 6px">Request reopening</button></div>`;
     }
-    const timeline=c.events.map(ev=>`<div class="timeline-item"><b>${escapeHtml(ev.action)}</b><p>${escapeHtml(ev.note||'No additional note')}${ev.actor_name?` · ${escapeHtml(ev.actor_name)}`:''}</p><time>${escapeHtml(dateLong(ev.created_at))}</time></div>`).join('');
+    const timeline=c.events.map(ev=>`<div class="timeline-item"><b>${escapeHtml(ev.action)}</b><p>${ev.note?timelineNoteMarkup(ev):'No additional note'}${ev.actor_name?` · <span class="user-submitted">${escapeHtml(ev.actor_name)}</span>`:''}</p><time>${escapeHtml(dateLong(ev.created_at))}</time></div>`).join('');
     $('#detail-content').innerHTML=`<div class="detail-head"><div><span class="eyebrow eyebrow-green">COMPLAINT RECORD</span><h2 id="detail-title">${escapeHtml(c.public_id)}</h2><div style="display:flex;gap:7px;align-items:center;margin-top:8px">${statusPill(c.status)}${priorityPill(c.priority)}</div></div><button class="close-modal" id="close-detail" aria-label="Close">×</button></div>
-      <div class="detail-body"><div class="detail-grid"><div class="detail-field"><span>Waste category</span><b>${escapeHtml(c.category)}</b></div><div class="detail-field"><span>Reported by</span><b>${escapeHtml(c.resident_name)}</b></div><div class="detail-field"><span>Neighbourhood</span><b>${escapeHtml(c.area)}</b></div><div class="detail-field"><span>Submitted</span><b>${escapeHtml(dateLong(c.created_at))}</b></div><div class="detail-field"><span>Assigned collection team</span><b>${escapeHtml(c.worker_name||'Not assigned')}</b></div><div class="detail-field"><span>Location coordinates</span><b>${Number(c.latitude).toFixed(5)}, ${Number(c.longitude).toFixed(5)}</b></div></div>
-      <b style="font-size:11px">Resident description</b><p class="detail-description">${escapeHtml(c.description)}</p>${c.address?`<p class="muted" style="font-size:10px">Landmark: ${escapeHtml(c.address)}</p>`:''}
+      <div class="detail-body"><div class="detail-grid"><div class="detail-field"><span>Waste category</span><b>${escapeHtml(c.category)}</b></div><div class="detail-field"><span>Reported by</span><b class="user-submitted">${escapeHtml(c.resident_name)}</b></div><div class="detail-field"><span>Neighbourhood</span><b class="user-submitted">${escapeHtml(c.area)}</b></div><div class="detail-field"><span>Submitted</span><b>${escapeHtml(dateLong(c.created_at))}</b></div><div class="detail-field"><span>Assigned collection team</span><b class="user-submitted">${escapeHtml(c.worker_name||'Not assigned')}</b></div><div class="detail-field"><span>Location coordinates</span><b>${Number(c.latitude).toFixed(5)}, ${Number(c.longitude).toFixed(5)}</b></div></div>
+      <b style="font-size:11px">Resident description</b><p class="detail-description">${escapeHtml(c.description)}</p>${c.address?`<p class="muted" style="font-size:10px">Landmark: <span class="user-submitted">${escapeHtml(c.address)}</span></p>`:''}
       ${c.image_before_url?`<div><b style="font-size:11px">Submitted photograph</b><br><img class="detail-image" src="${escapeHtml(c.image_before_url)}" alt="Reported waste issue"></div>`:''}
-      ${c.image_after_url?`<div><b style="font-size:11px">Completion evidence</b><br><img class="detail-image" src="${escapeHtml(c.image_after_url)}" alt="After-cleaning evidence"><p class="work-note">${escapeHtml(c.completion_note||'')}</p></div>`:''}
-      ${c.rejection_reason?`<div class="rejected-note"><b>Reason recorded:</b> ${escapeHtml(c.rejection_reason)}</div>`:''}
+      ${c.image_after_url?`<div><b style="font-size:11px">Completion evidence</b><br><img class="detail-image" src="${escapeHtml(c.image_after_url)}" alt="After-cleaning evidence"><p class="work-note user-submitted">${escapeHtml(c.completion_note||'')}</p></div>`:''}
+      ${c.rejection_reason?`<div class="rejected-note"><b>Reason recorded:</b> <span class="user-submitted">${escapeHtml(c.rejection_reason)}</span></div>`:''}
       ${canAdmin?`<div class="detail-actions"><button class="btn btn-outline btn-small" id="check-similar">Check nearby similar reports</button><span id="similar-results" class="work-note"></span></div>`:''}
       <div style="margin-top:20px"><b style="font-size:12px">Complaint history</b><div class="timeline">${timeline||'<p class="muted">No history available.</p>'}</div></div>${actions}</div>`;
     $('#detail-modal').classList.remove('hidden');
@@ -557,7 +563,7 @@ async function openComplaint(id) {
       $('#save-priority')?.addEventListener('click',async()=>{try{await api(`/complaints/${id}/priority`,{method:'POST',body:JSON.stringify({priority:$('#detail-priority').value})});showToast('Priority updated.');await openComplaint(id);refreshCurrentPage();}catch(e){showToast(e.message,'error');}});
       $('#assign-task')?.addEventListener('click',async()=>{try{const workerId=$('#assign-worker').value;if(!workerId)throw new Error('Choose a collection team member.');await api(`/complaints/${id}/assign`,{method:'POST',body:JSON.stringify({worker_id:workerId})});showToast('Collection team assigned.');await openComplaint(id);refreshCurrentPage();}catch(e){showToast(e.message,'error');}});
       $$('[data-verify]').forEach(btn=>btn.addEventListener('click',()=>adminVerify(id,btn.dataset.verify)));
-      $('#check-similar')?.addEventListener('click',async()=>{try{const r=await api(`/complaints/${id}/similar`);$('#similar-results').innerHTML=r.matches.length?`<div style="margin-top:10px;width:100%"><b style="font-size:10px">Possible nearby matches</b>${r.matches.map(x=>`<div class="mini-metric"><span>${escapeHtml(x.public_id)} · ${x.approx_distance_m}m</span><button class="btn btn-outline btn-small" data-mark-duplicate="${x.id}">Link as duplicate</button></div>`).join('')}</div>`:'No nearby same-category reports found.';$$('[data-mark-duplicate]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Link this report as a duplicate of the selected existing complaint?'))return;try{await api(`/complaints/${id}/duplicate`,{method:'POST',body:JSON.stringify({canonical_id:Number(btn.dataset.markDuplicate)})});showToast('Report linked as a duplicate.');await openComplaint(id);refreshCurrentPage();}catch(e){showToast(e.message,'error');}}));}catch(e){showToast(e.message,'error');}});
+      $('#check-similar')?.addEventListener('click',async()=>{try{const r=await api(`/complaints/${id}/similar`);$('#similar-results').innerHTML=r.matches.length?`<div style="margin-top:10px;width:100%"><b style="font-size:10px">Possible nearby matches</b>${r.matches.map(x=>`<div class="mini-metric"><span>${escapeHtml(x.public_id)} · ${displayNumber(x.approx_distance_m)}m</span><button class="btn btn-outline btn-small" data-mark-duplicate="${x.id}">Link as duplicate</button></div>`).join('')}</div>`:'No nearby same-category reports found.';$$('[data-mark-duplicate]').forEach(btn=>btn.addEventListener('click',async()=>{if(!confirm('Link this report as a duplicate of the selected existing complaint?'))return;try{await api(`/complaints/${id}/duplicate`,{method:'POST',body:JSON.stringify({canonical_id:Number(btn.dataset.markDuplicate)})});showToast('Report linked as a duplicate.');await openComplaint(id);refreshCurrentPage();}catch(e){showToast(e.message,'error');}}));}catch(e){showToast(e.message,'error');}});
     }
     if(isWorker && c.assigned_to===currentUser.id){
       $('#worker-start')?.addEventListener('click',async()=>{try{await api(`/complaints/${id}/work`,{method:'POST',body:JSON.stringify({action:'start',note:'Field work started'})});showToast('Task started.');await openComplaint(id);refreshCurrentPage();}catch(e){showToast(e.message,'error');}});
@@ -573,7 +579,7 @@ async function openComplaint(id) {
     }
   } catch(e){showToast(e.message,'error');}
 }
-function closeDetail() {$('#detail-modal').classList.add('hidden');}
+function closeDetail() {$('#detail-modal').classList.add('hidden');currentDetailId=null;}
 async function adminReview(id,action) {
   let reason='';
   if(action==='reject'||action==='needs_info'){reason=prompt(action==='reject'?'Provide a reason for rejecting this report:':'What information is needed from the resident?')||'';if(reason.trim().length<5){showToast('Please provide a clear note of at least 5 characters.','error');return;}}
@@ -586,6 +592,28 @@ async function adminVerify(id,action) {
   catch(e){showToast(e.message,'error');}
 }
 function refreshCurrentPage(){setTimeout(()=>{if(activePage==='dashboard')renderDashboard();else if(activePage==='complaints')applyComplaintFilters();else if(activePage==='tasks')renderTasksPage();else if(activePage==='map')renderMapPage();else if(activePage==='teams')renderTeamsPage();},250);}
+function timelineNoteMarkup(event) {
+  const note = String(event.note || '');
+  const action = String(event.action || '');
+  const systemNote =
+    (action === 'Complaint submitted' && note === 'Report received from resident') ||
+    (action === 'Resolution verified' && note === 'Completion evidence reviewed and accepted') ||
+    action === 'Linked as duplicate report' ||
+    action === 'Priority changed' ||
+    action === 'Collection team assigned';
+  return systemNote ? escapeHtml(note) : `<span class="user-submitted">${escapeHtml(note)}</span>`;
+}
+
+// Refresh locale-sensitive dates and numbers after a language change without changing the active workflow.
+window.addEventListener('cleantrack:languagechange', () => {
+  if (!currentUser || $('#app-shell')?.classList.contains('hidden')) return;
+  const detailWasOpen = currentDetailId !== null && !$('#detail-modal')?.classList.contains('hidden');
+  const detailId = currentDetailId;
+  const notificationsWereOpen = !$('#notification-popover')?.classList.contains('hidden');
+  if (activePage !== 'report') refreshCurrentPage();
+  if (detailWasOpen) window.setTimeout(() => { if (currentDetailId === detailId && !$('#detail-modal')?.classList.contains('hidden')) openComplaint(detailId); }, 750);
+  if (notificationsWereOpen) window.setTimeout(() => { $('#notification-popover')?.classList.add('hidden'); void toggleNotifications(); }, 250);
+});
 async function loadNotifications(){try{const d=await api('/notifications');const unread=d.notifications.some(n=>!n.is_read);$('#notification-dot').classList.toggle('hidden',!unread);}catch{}}
 async function refreshNotificationDot(){await loadNotifications();}
 async function toggleNotifications(){
@@ -605,7 +633,7 @@ $$('[data-demo]').forEach(btn=>btn.addEventListener('click',()=>{
   const email=btn.dataset.demo==='resident'?'resident@cleantrack.demo':btn.dataset.demo==='admin'?'admin@cleantrack.demo':'worker@cleantrack.demo';
   $('#login-email').value=email;$('#login-password').value='demo123';$('#login-form').requestSubmit();
 }));
-$('#logout-button').addEventListener('click',async()=>{stopReportCamera();try{await api('/logout',{method:'POST',body:JSON.stringify({})});}catch{}currentUser=null;csrfToken=null;$('#app-shell').classList.add('hidden');$('#login-screen').classList.add('hidden');$('#landing-page')?.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});});
+$('#logout-button').addEventListener('click',async()=>{stopReportCamera();try{await api('/logout',{method:'POST',body:JSON.stringify({})});}catch{}currentUser=null;csrfToken=null;currentDetailId=null;window.CleanTrackLanguageUser=null;window.CleanTrackI18n?.setUserContext?.(null);$('#app-shell').classList.add('hidden');$('#login-screen').classList.add('hidden');$('#landing-page')?.classList.remove('hidden');window.scrollTo({top:0,behavior:'smooth'});});
 $('#notification-button').addEventListener('click',toggleNotifications);
 $('#mobile-menu').addEventListener('click',()=>$('#sidebar').classList.toggle('open'));
 $('#detail-modal').addEventListener('click',event=>{if(event.target.id==='detail-modal')closeDetail();});

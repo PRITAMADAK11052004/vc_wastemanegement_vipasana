@@ -25,6 +25,7 @@
   <link rel="stylesheet" href="/intro-animation.css">
   <link rel="stylesheet" href="/workspace-theme.css">
   <link rel="stylesheet" href="/typography.css">
+  <link rel="stylesheet" href="/i18n.css">
 </head>
 <body>
   <div id="toast-root" class="toast-root" aria-live="polite"></div>
@@ -45,6 +46,7 @@
       </nav>
       <div class="site-header-actions">
         <button class="site-login-link" data-open-login>Sign in</button>
+        <label class="language-picker" aria-label="Language"><select data-language-select aria-label="Choose language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option></select></label>
         <button class="theme-toggle" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Switch colour mode">
           <span class="theme-toggle-side theme-toggle-sun" aria-hidden="true">☼</span>
           <span class="theme-toggle-side theme-toggle-moon" aria-hidden="true">☾</span>
@@ -397,6 +399,7 @@
       <div class="badge"></div>
       <div class="glyph"><svg viewBox="0 0 48 48"><path class="blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/><path class="rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/><path class="leaf-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/></svg></div>
     </div>
+    <label class="language-picker language-picker-auth" aria-label="Language"><select data-language-select aria-label="Choose language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option></select></label>
     <button class="theme-toggle theme-toggle-auth" data-reveal=".28" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Switch colour mode"><span class="theme-toggle-side theme-toggle-sun" aria-hidden="true">☼</span><span class="theme-toggle-side theme-toggle-moon" aria-hidden="true">☾</span><span class="theme-toggle-knob" aria-hidden="true"><span class="knob-sun">☼</span><span class="knob-moon">☾</span></span></button>
     <section class="login-visual" data-reveal="0">
       <div class="brand brand-light" data-reveal=".06"><div class="logo-badge" id="logoBadge" aria-hidden="true">
@@ -452,6 +455,7 @@
         <button id="mobile-menu" class="mobile-menu" aria-label="Open menu">☰</button>
         <div class="breadcrumb"><span>Workspace</span><span class="crumb-sep">/</span><b id="page-title">Overview</b></div>
         <div class="topbar-actions">
+          <label class="language-picker" aria-label="Language"><select data-language-select aria-label="Choose language"><option value="en">English</option><option value="hi">हिन्दी</option><option value="bn">বাংলা</option></select></label>
           <button class="theme-toggle theme-toggle-workspace" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Switch colour mode"><span class="theme-toggle-side theme-toggle-sun" aria-hidden="true">☼</span><span class="theme-toggle-side theme-toggle-moon" aria-hidden="true">☾</span><span class="theme-toggle-knob" aria-hidden="true"><span class="knob-sun">☼</span><span class="knob-moon">☾</span></span></button>
           <button id="notification-button" class="icon-button notification-button" aria-label="Notifications">♧<i id="notification-dot" class="notification-dot hidden"></i></button>
           <div class="topbar-user"><span class="avatar avatar-mint" id="header-avatar">R</span><span><b id="header-name">Resident</b><small id="header-role">Resident workspace</small></span></div>
@@ -472,5 +476,6 @@
   <script src="/intro-exact.js"></script>
   <script src="/theme.js"></script>
   <script src="/app.js"></script>
+  <script src="/i18n.js"></script>
 </body>
 </html>
