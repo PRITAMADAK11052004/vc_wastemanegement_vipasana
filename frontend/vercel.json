@@ -3,11 +3,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "https://YOUR-RENDER-SERVICE.onrender.com/api/:path*"
+      "destination": "https://vc-wastemanegement-vipasana.onrender.com/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "https://YOUR-RENDER-SERVICE.onrender.com/uploads/:path*"
+      "destination": "https://vc-wastemanegement-vipasana.onrender.com/uploads/:path*"
     }
   ]
 }
