@@ -1,10 +1,11 @@
-/* CleanTrack typography-only update.
-   This file changes font families and the explicitly requested text sizes only.
-   No colours, backgrounds, borders, spacing, layout, animations or behaviour are changed. */
+/* CleanTrack typography update — workspace and sign-in screens only.
+   The public landing / hero page is intentionally not targeted by any rule.
+   This stylesheet changes typography only: family, font size and line-height.
+   It does not change colours, backgrounds, borders, spacing, layout, animation or behaviour. */
 
-/* Inter is the shared sans-serif interface typeface throughout CleanTrack. */
-#landing-page,
-#landing-page *,
+/* Sans-serif interface typeface for sign-in, workspace, dialogs and notifications.
+   No selectors target the public landing-page container, so the hero and all landing sections
+   retain their previous DM Sans / Manrope typography exactly. */
 #login-screen,
 #login-screen *,
 #app-shell,
@@ -18,7 +19,7 @@
   font-family: Inter, Arial, sans-serif !important;
 }
 
-/* Forms: labels and editable controls. */
+/* Forms and editable controls in sign-in and workspace pages. */
 #login-screen .stack-form label,
 #app-shell .field label,
 #app-shell .stack-form label,
@@ -38,15 +39,7 @@
   font-size: 14px !important;
 }
 
-/* Action buttons and interactive text controls. Icon-only controls retain their existing sizing. */
-#landing-page .site-cta,
-#landing-page .site-cta-small,
-#landing-page .site-login-link,
-#landing-page .site-text-link,
-#landing-page .feature-tab,
-#landing-page .feature-cta,
-#landing-page .footer-links a,
-#landing-page .footer-links button,
+/* Buttons and interactive text controls outside the public landing page. */
 #login-screen .btn,
 #login-screen .demo-user,
 #app-shell .btn,
@@ -57,7 +50,7 @@
   font-size: 14px !important;
 }
 
-/* Data tables and live status / priority badges. */
+/* Workspace tables and live status / priority badges. */
 #app-shell .data-table th,
 #app-shell .data-table td,
 #app-shell table th,
@@ -68,15 +61,12 @@
   font-size: 14px !important;
 }
 
-/* Editorial serif: longer policy notices, neighbourhood impact summaries,
-   resident descriptions and verified-cleanup / work-history notes. */
+/* Editorial serif is limited to longer-form content in the workspace only. */
 #app-shell .notice-box,
 #app-shell .detail-description,
 #app-shell .timeline-item p,
 #app-shell .work-note,
-#app-shell .rejected-note,
-#landing-page .impact-copy p,
-#landing-page .impact-tile p {
+#app-shell .rejected-note {
   font-family: Newsreader, Georgia, serif !important;
   font-size: 16px !important;
   line-height: 1.65 !important;
