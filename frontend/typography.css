@@ -1,0 +1,90 @@
+/* CleanTrack typography-only update.
+   This file changes font families and the explicitly requested text sizes only.
+   No colours, backgrounds, borders, spacing, layout, animations or behaviour are changed. */
+
+/* Inter is the shared sans-serif interface typeface throughout CleanTrack. */
+#landing-page,
+#landing-page *,
+#login-screen,
+#login-screen *,
+#app-shell,
+#app-shell *,
+#detail-modal,
+#detail-modal *,
+#notification-popover,
+#notification-popover *,
+#toast-root,
+#toast-root * {
+  font-family: Inter, Arial, sans-serif !important;
+}
+
+/* Forms: labels and editable controls. */
+#login-screen .stack-form label,
+#app-shell .field label,
+#app-shell .stack-form label,
+#login-screen input,
+#login-screen select,
+#login-screen textarea,
+#app-shell .field input,
+#app-shell .field select,
+#app-shell .field textarea,
+#app-shell .stack-form input,
+#app-shell .stack-form select,
+#app-shell .inline-form input,
+#app-shell .inline-form select,
+#app-shell .inline-form textarea,
+#app-shell .search-box input,
+#app-shell .toolbar select {
+  font-size: 14px !important;
+}
+
+/* Action buttons and interactive text controls. Icon-only controls retain their existing sizing. */
+#landing-page .site-cta,
+#landing-page .site-cta-small,
+#landing-page .site-login-link,
+#landing-page .site-text-link,
+#landing-page .feature-tab,
+#landing-page .feature-cta,
+#landing-page .footer-links a,
+#landing-page .footer-links button,
+#login-screen .btn,
+#login-screen .demo-user,
+#app-shell .btn,
+#app-shell .text-button,
+#app-shell .section-link,
+#app-shell .nav-item,
+#app-shell .logout-button {
+  font-size: 14px !important;
+}
+
+/* Data tables and live status / priority badges. */
+#app-shell .data-table th,
+#app-shell .data-table td,
+#app-shell table th,
+#app-shell table td,
+#app-shell .status-pill,
+#app-shell .priority-pill,
+#app-shell .task-priority {
+  font-size: 14px !important;
+}
+
+/* Editorial serif: longer policy notices, neighbourhood impact summaries,
+   resident descriptions and verified-cleanup / work-history notes. */
+#app-shell .notice-box,
+#app-shell .detail-description,
+#app-shell .timeline-item p,
+#app-shell .work-note,
+#app-shell .rejected-note,
+#landing-page .impact-copy p,
+#landing-page .impact-tile p {
+  font-family: Newsreader, Georgia, serif !important;
+  font-size: 16px !important;
+  line-height: 1.65 !important;
+}
+
+/* Short notice and rejection headings remain interface labels in Inter. */
+#app-shell .notice-box b,
+#app-shell .rejected-note b {
+  font-family: Inter, Arial, sans-serif !important;
+  font-size: 14px !important;
+}
