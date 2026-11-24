@@ -625,9 +625,27 @@ async function toggleNotifications(){
 }
 
 $('#login-form').addEventListener('submit',async event=>{
-  event.preventDefault();$('#login-error').textContent='';
-  try{const d=await api('/login',{method:'POST',body:JSON.stringify({email:$('#login-email').value,password:$('#login-password').value})});setUser(d.user,d.csrf_token);}
-  catch(e){$('#login-error').textContent=e.message;}
+  event.preventDefault();
+  const error = $('#login-error');
+  error.textContent = '';
+  const email = String($('#login-email').value || '').trim();
+  const password = String($('#login-password').value || '');
+  if (!email || !email.includes('@') || email.startsWith('@') || email.endsWith('@') || /\s/.test(email)) {
+    error.textContent = window.CleanTrackI18n?.translate?.('Email address must contain @.') || 'Email address must contain @.';
+    $('#login-email').focus();
+    return;
+  }
+  if (password.length < 5) {
+    error.textContent = window.CleanTrackI18n?.translate?.('Password must be at least 5 characters.') || 'Password must be at least 5 characters.';
+    $('#login-password').focus();
+    return;
+  }
+  try {
+    const d = await api('/login', {method:'POST', body:JSON.stringify({email, password})});
+    setUser(d.user, d.csrf_token);
+  } catch (e) {
+    error.textContent = e.message;
+  }
 });
 $$('[data-demo]').forEach(btn=>btn.addEventListener('click',()=>{
   const email=btn.dataset.demo==='resident'?'resident@cleantrack.demo':btn.dataset.demo==='admin'?'admin@cleantrack.demo':'worker@cleantrack.demo';
@@ -752,7 +770,7 @@ document.addEventListener('click',event=>{if(!event.target.closest('#notificatio
     const visual = document.getElementById('feature-visual');
     visual.dataset.visual = item.visual;
     visual.setAttribute('aria-label', `${item.cardTitle} visual preview`);
-    const sharedHead = `<div class="demo-panel-head"><span class="demo-app-mark">✳</span><b>${item.cardTitle}</b><span class="demo-live-tag">${item.status}</span></div>`;
+    const sharedHead = `<div class="demo-panel-head"><span class="demo-app-mark"><img src="/assets/cleantrack-leaf-logo.png" alt=""></span><b>${item.cardTitle}</b><span class="demo-live-tag">${item.status}</span></div>`;
     const views = {
       report: `<div class="feature-demo-card report-demo">${sharedHead}<div class="demo-field"><small>ISSUE CATEGORY</small><b>${item.category}</b></div><div class="demo-field"><small>DESCRIPTION</small><b>${item.descriptionField}</b></div><div class="demo-proof-row"><span class="demo-proof-icon">▧</span><span><b>Photo evidence attached</b><small>Issue photograph · JPG</small></span><strong>✓</strong></div><div class="demo-proof-row"><span class="demo-proof-icon">⌖</span><span><b>Location selected</b><small>Ward 04 · Map pin captured</small></span></div><div class="demo-action-row"><span>Ready for review</span><b>Submit report →</b></div></div>`,
       map: `<div class="feature-demo-card map-demo">${sharedHead}<div class="map-demo-toolbar"><span>ALL REPORTED ISSUES</span><span>FILTERS&nbsp; ▾</span></div><div class="map-demo-art"><div class="map-demo-road map-demo-road-a"></div><div class="map-demo-road map-demo-road-b"></div><div class="map-demo-road map-demo-road-c"></div><div class="map-demo-zone"></div><i class="map-demo-pin one">1</i><i class="map-demo-pin two">2</i><i class="map-demo-pin three">3</i><i class="map-demo-pin four">4</i></div><div class="map-demo-legend"><span><i></i> Submitted</span><span><i></i> In progress</span><span><i></i> Resolved</span></div><div class="map-demo-foot"><b>${item.category}</b><small>${item.descriptionField}</small></div></div>`,

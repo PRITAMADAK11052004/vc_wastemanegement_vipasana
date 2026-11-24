@@ -1,0 +1,46 @@
+/* CleanTrack leaf logo asset — uses the supplied brand mark in every brand lockup. */
+.site-brand-mark,
+.preview-brand-icon,
+.brand-mark,
+.logo-badge,
+.demo-app-mark {
+  overflow: hidden;
+}
+.site-brand-mark img,
+.preview-brand-icon img,
+.brand-mark img,
+.logo-badge img,
+.demo-app-mark img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.site-brand-mark,
+.preview-brand-icon,
+.brand-mark {
+  background: transparent;
+}
+.logo-badge {
+  background: transparent;
+  padding: 0;
+}
+.logo-badge .brand-logo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+.app-footer-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.app-footer-brand img {
+  display: block;
+  width: 20px;
+  height: 20px;
+  flex: none;
+  object-fit: contain;
+}
+
+.demo-app-mark { background: transparent; }

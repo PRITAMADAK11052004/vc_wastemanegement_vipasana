@@ -246,7 +246,6 @@
     clearInline();
     loginScreen?.classList.remove('intro-running');
     loginScreen?.classList.add('intro-complete');
-    try { sessionStorage.setItem('cleantrack-login-intro-played', '1'); } catch {}
     $('login-email')?.focus({ preventScroll: true });
   }
 
@@ -287,11 +286,17 @@
 
   function openLoginIntro() {
     if (!loginScreen) return;
-    let alreadyPlayed = false;
-    try { alreadyPlayed = sessionStorage.getItem('cleantrack-login-intro-played') === '1'; } catch {}
-    if (reduced.matches || alreadyPlayed) {
-      root.classList.remove('intro');
-      clearInline();
+
+    // Every explicit Register / Sign in opening starts the same complete intro again.
+    if (openFrame1) cancelAnimationFrame(openFrame1);
+    if (openFrame2) cancelAnimationFrame(openFrame2);
+    if (raf) cancelAnimationFrame(raf);
+    running = false;
+    t0 = 0;
+    root.classList.remove('intro');
+    clearInline();
+
+    if (reduced.matches) {
       loginScreen.classList.remove('intro-running');
       loginScreen.classList.add('intro-complete');
       $('login-email')?.focus({ preventScroll: true });
@@ -330,7 +335,6 @@
     close: closeLoginIntro,
     refreshThemeColors,
     replay: () => {
-      try { sessionStorage.removeItem('cleantrack-login-intro-played'); } catch {}
       closeLoginIntro();
       openLoginIntro();
     }
