@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#93C572">
+  <meta name="description" content="CleanTrack connects residents, administrators and collection teams through a clear waste issue reporting and resolution workflow.">
+  <title>CleanTrack — Cleaner neighbourhoods, coordinated action</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
+  <link rel="stylesheet" href="/style.css">
+  <link rel="stylesheet" href="/landing.css">
+</head>
+<body>
+  <div id="toast-root" class="toast-root" aria-live="polite"></div>
+
+  <main id="landing-page" class="landing-page">
+    <header class="site-header">
+      <a class="site-brand" href="#top" aria-label="CleanTrack home">
+        <span class="site-brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 32 32" fill="none"><path d="M16 4.5c-5.1 3.2-8.1 7.1-8.1 11.4a8.1 8.1 0 0 0 16.2 0C24.1 11.6 21.1 7.7 16 4.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M11.4 19.4c2.7-.2 5.9-2.4 8.8-6.4M14.8 22.7c-.1-2.4.5-4.6 1.8-6.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </span>
+        <span>CleanTrack</span>
+      </a>
+      <nav class="site-nav" id="site-nav" aria-label="Main navigation">
+        <a href="#platform">Platform</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#stakeholders">Who it's for</a>
+        <a href="#impact">Outcomes</a>
+      </nav>
+      <div class="site-header-actions">
+        <button class="site-login-link" data-open-login>Sign in</button>
+        <button class="site-cta site-cta-small" data-open-login>Open workspace <span aria-hidden="true">↗</span></button>
+      </div>
+      <button class="site-menu-toggle" id="site-menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    </header>
+
+    <section class="hero-section" id="top">
+      <div class="hero-copy reveal-item">
+        <div class="hero-kicker"><span class="kicker-dot"></span> A connected civic operations platform</div>
+        <h1>Cleaner neighbourhoods.<br><em>Better coordinated</em> action.</h1>
+        <p class="hero-lede">From the first report to verified clean-up, CleanTrack brings residents, administrators and collection teams into one clear, accountable workflow.</p>
+        <div class="hero-actions">
+          <button class="site-cta" data-open-login>Explore the workspace <span aria-hidden="true">→</span></button>
+          <a class="site-text-link" href="#platform">Discover what CleanTrack does <span aria-hidden="true">↓</span></a>
+        </div>
+        <div class="hero-trust-line"><span class="trust-mark">✓</span> Report clearly <span class="trust-separator">·</span> Coordinate responsibly <span class="trust-separator">·</span> Verify resolution</div>
+      </div>
+      <div class="hero-visual reveal-item" aria-label="Illustration of the CleanTrack operations dashboard">
+        <div class="hero-visual-glow"></div>
+        <div class="preview-window">
+          <div class="preview-topbar"><div class="preview-brand"><span class="preview-brand-icon">✳</span> CleanTrack <small>OPERATIONS</small></div><div class="preview-window-dots"><i></i><i></i><i></i></div></div>
+          <div class="preview-body">
+            <div class="preview-heading"><div><span class="preview-overline">WORKSPACE OVERVIEW</span><h3>Good morning, team.</h3><p>Here is today's neighbourhood activity.</p></div><span class="preview-date">SAMPLE DATA</span></div>
+            <div class="preview-stat-grid">
+              <div class="preview-stat"><span class="preview-stat-icon">◉</span><small>Reports received</small><b>128</b><span class="preview-stat-note">Across monitored areas</span></div>
+              <div class="preview-stat"><span class="preview-stat-icon">↗</span><small>Work in progress</small><b>24</b><span class="preview-stat-note">Assigned to field teams</span></div>
+              <div class="preview-stat"><span class="preview-stat-icon">✓</span><small>Verified closed</small><b>86</b><span class="preview-stat-note">Completion confirmed</span></div>
+            </div>
+            <div class="preview-lower">
+              <div class="preview-map-card"><div class="preview-card-head"><b>Reported issues</b><span>Area view</span></div><div class="mini-map-art"><div class="map-road road-a"></div><div class="map-road road-b"></div><div class="map-road road-c"></div><div class="map-park"></div><span class="map-pin pin-a">•</span><span class="map-pin pin-b">•</span><span class="map-pin pin-c">•</span><span class="map-pin pin-d">•</span></div><div class="preview-map-foot"><span><i class="legend-pip pip-open"></i> Open report</span><span><i class="legend-pip pip-active"></i> In progress</span></div></div>
+              <div class="preview-activity"><div class="preview-card-head"><b>Recent activity</b><span>Live view</span></div><div class="preview-activity-row"><span class="activity-avatar">R</span><div><b>New report received</b><small>Overflowing bin · Ward 04</small></div><i class="activity-state state-new"></i></div><div class="preview-activity-row"><span class="activity-avatar">F</span><div><b>Collection started</b><small>Roadside litter · Ward 02</small></div><i class="activity-state state-work"></i></div><div class="preview-activity-row"><span class="activity-avatar">A</span><div><b>Resolution verified</b><small>Plastic waste · Ward 06</small></div><i class="activity-state state-done"></i></div></div>
+            </div>
+          </div>
+        </div>
+        <div class="floating-note floating-note-top"><span class="floating-note-icon">✓</span><span><b>Accountable by design</b><small>Every action has a clear status</small></span></div>
+        <div class="floating-note floating-note-bottom"><span class="floating-note-icon">⌖</span><span><b>Location-aware reporting</b><small>See issues in their neighbourhood</small></span></div>
+      </div>
+      <div class="hero-bottom-line"><span>ONE CONNECTED WORKFLOW</span><span>REPORT <b>→</b> COORDINATE <b>→</b> VERIFY</span></div>
+    </section>
+
+    <section class="intro-strip reveal-item">
+      <div><span class="section-overline">THE CLEANTRACK APPROACH</span><h2>Waste issues should never disappear into a queue.</h2></div>
+      <p>Every report becomes a traceable task, with a location, a responsible owner, a visible history and a verified outcome.</p>
+    </section>
+
+    <section class="platform-section section-pad" id="platform">
+      <div class="section-heading reveal-item"><div><span class="section-overline">ONE PLATFORM. CONNECTED ACTION.</span><h2>Everything needed to move<br>an issue toward resolution.</h2></div><p>Explore the capabilities one by one. Each part connects to the same shared record, so no one has to guess what happens next.</p></div>
+      <div class="feature-explorer reveal-item" id="feature-explorer">
+        <div class="feature-explorer-side">
+          <span class="explorer-label">CAPABILITIES</span>
+          <div class="feature-tab-list" role="tablist" aria-label="CleanTrack capabilities">
+            <button class="feature-tab is-active" role="tab" aria-selected="true" data-feature="0"><span>01</span> Citizen reporting <i>↗</i></button>
+            <button class="feature-tab" role="tab" aria-selected="false" data-feature="1"><span>02</span> Location intelligence <i>↗</i></button>
+            <button class="feature-tab" role="tab" aria-selected="false" data-feature="2"><span>03</span> Team coordination <i>↗</i></button>
+            <button class="feature-tab" role="tab" aria-selected="false" data-feature="3"><span>04</span> Verified resolution <i>↗</i></button>
+            <button class="feature-tab" role="tab" aria-selected="false" data-feature="4"><span>05</span> Operational insight <i>↗</i></button>
+          </div>
+          <div class="feature-controls"><button id="feature-prev" aria-label="Previous capability">←</button><div class="feature-progress"><span id="feature-progress-fill"></span></div><button id="feature-next" aria-label="Next capability">→</button><button id="feature-pause" class="feature-pause" aria-label="Pause feature rotation">Ⅱ</button></div>
+          <p class="feature-auto-note"><span class="auto-pulse"></span> Capabilities advance automatically</p>
+        </div>
+        <div class="feature-explorer-main" aria-live="polite">
+          <div class="feature-copy" id="feature-copy">
+            <span class="feature-index" id="feature-index">CAPABILITY 01 / 05</span>
+            <div class="feature-icon-large" id="feature-icon-large">✎</div>
+            <h3 id="feature-title">Make reporting simple and useful.</h3>
+            <p id="feature-description">Residents can submit a clear report with a category, description, photograph and map location. A unique reference makes the issue easy to follow.</p>
+            <ul class="feature-points" id="feature-points"><li>Structured issue categories</li><li>Photo evidence and location pin</li><li>Unique complaint reference</li></ul>
+            <button class="feature-cta" data-open-login>See the reporting workspace <span>→</span></button>
+          </div>
+          <div class="feature-visual" id="feature-visual" data-visual="report">
+            <div class="visual-card report-visual-card"><div class="visual-card-top"><b id="visual-card-title">New waste report</b><span class="visual-status">DRAFT</span></div><div class="visual-field"><small>ISSUE CATEGORY</small><b id="visual-category">Overflowing bin</b></div><div class="visual-field"><small>DESCRIPTION</small><b id="visual-description">Waste is spilling outside the collection point.</b></div><div class="visual-upload"><span class="upload-symbol">▧</span><span><b>Photo evidence attached</b><small>Issue photograph · JPG</small></span><span class="upload-check">✓</span></div><div class="visual-location"><span class="location-symbol">⌖</span><span><b>Location selected</b><small>Ward 04 · Map pin captured</small></span></div><div class="visual-submit-row"><span>Ready for review</span><span class="visual-submit">Submit report →</span></div></div>
+            <div class="visual-orbit orbit-one"></div><div class="visual-orbit orbit-two"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="workflow-section section-pad" id="how-it-works">
+      <div class="section-heading section-heading-light reveal-item"><div><span class="section-overline">A CLEAR PATH FOR EVERY REPORT</span><h2>From the first signal<br>to verified clean-up.</h2></div><p>A structured lifecycle keeps residents informed and gives administrators and field teams a shared understanding of the next action.</p></div>
+      <div class="workflow-track reveal-item">
+        <div class="workflow-line"><span></span></div>
+        <article class="workflow-step"><div class="workflow-number">01</div><div class="workflow-icon">⌖</div><h3>Report</h3><p>Capture the issue, photograph and location.</p><small>RESIDENT</small></article>
+        <article class="workflow-step"><div class="workflow-number">02</div><div class="workflow-icon">◎</div><h3>Review</h3><p>Validate the report and determine its priority.</p><small>ADMINISTRATION</small></article>
+        <article class="workflow-step"><div class="workflow-number">03</div><div class="workflow-icon">↗</div><h3>Coordinate</h3><p>Assign the work and record field progress.</p><small>FIELD TEAM</small></article>
+        <article class="workflow-step"><div class="workflow-number">04</div><div class="workflow-icon">✓</div><h3>Verify</h3><p>Review completion evidence and close the report.</p><small>ADMINISTRATION</small></article>
+      </div>
+      <div class="workflow-foot reveal-item"><span>One shared complaint record</span><span>Clear ownership at every stage <b>→</b></span></div>
+    </section>
+
+    <section class="stakeholder-section section-pad" id="stakeholders">
+      <div class="section-heading reveal-item"><div><span class="section-overline">DESIGNED FOR THE PEOPLE DOING THE WORK</span><h2>Different responsibilities.<br>One shared picture.</h2></div><p>Each role sees the information and actions relevant to them, while the complaint history stays connected across the platform.</p></div>
+      <div class="stakeholder-grid">
+        <article class="stakeholder-card reveal-item"><div class="stakeholder-top"><span class="stakeholder-icon">⌂</span><span class="stakeholder-number">01 / RESIDENT</span></div><h3>Make local issues visible.</h3><p>Residents can report a problem, attach evidence, select a location and follow progress without needing to understand internal department structures.</p><ul><li>Easy issue submission</li><li>Personal complaint tracking</li><li>Updates and feedback</li></ul><a href="#platform">Explore citizen reporting <span>→</span></a></article>
+        <article class="stakeholder-card stakeholder-card-featured reveal-item"><div class="stakeholder-top"><span class="stakeholder-icon">▦</span><span class="stakeholder-number">02 / ADMINISTRATION</span></div><h3>Keep operations accountable.</h3><p>Administrators can review reports, manage priorities, assign collection work, verify evidence and monitor service performance.</p><ul><li>Central complaint inbox</li><li>Team assignment and oversight</li><li>Area and performance insights</li></ul><a href="#platform">Explore operations management <span>→</span></a></article>
+        <article class="stakeholder-card reveal-item"><div class="stakeholder-top"><span class="stakeholder-icon">♧</span><span class="stakeholder-number">03 / FIELD TEAM</span></div><h3>Turn assignments into action.</h3><p>Collection teams can see task details, navigate to the reported location, update progress and submit completion evidence.</p><ul><li>Prioritised task list</li><li>Location and issue details</li><li>Completion evidence</li></ul><a href="#how-it-works">Explore field coordination <span>→</span></a></article>
+      </div>
+    </section>
+
+    <section class="impact-section section-pad" id="impact">
+      <div class="impact-copy reveal-item"><span class="section-overline">BUILT AROUND ACCOUNTABILITY</span><h2>Measure progress.<br>Learn from patterns.</h2><p>CleanTrack turns operational records into a clearer view of what is being reported, where work is pending and how resolutions are progressing.</p><button class="site-cta site-cta-white" data-open-login>Explore the platform <span>→</span></button></div>
+      <div class="impact-grid reveal-item"><div class="impact-tile"><span class="impact-symbol">⌖</span><b>Location-aware</b><p>Understand where issues are being reported.</p></div><div class="impact-tile"><span class="impact-symbol">◷</span><b>Time-conscious</b><p>Identify work that is waiting or overdue.</p></div><div class="impact-tile"><span class="impact-symbol">✓</span><b>Evidence-led</b><p>Verify completion before closing reports.</p></div><div class="impact-tile"><span class="impact-symbol">▥</span><b>Insight-driven</b><p>Review trends by category, area and status.</p></div></div>
+    </section>
+
+    <section class="closing-section section-pad reveal-item"><span class="section-overline">A BETTER WAY TO WORK TOGETHER</span><h2>Make every report<br><em>count toward progress.</em></h2><p>Bring reporting, coordination and verification into one connected waste-management workflow.</p><button class="site-cta" data-open-login>Enter CleanTrack <span>↗</span></button><div class="closing-orbit closing-orbit-a"></div><div class="closing-orbit closing-orbit-b"></div></section>
+
+    <footer class="site-footer"><a class="site-brand" href="#top"><span class="site-brand-mark"><svg viewBox="0 0 32 32" fill="none"><path d="M16 4.5c-5.1 3.2-8.1 7.1-8.1 11.4a8.1 8.1 0 0 0 16.2 0C24.1 11.6 21.1 7.7 16 4.5Z" stroke="currentColor" stroke-width="1.8"/><path d="M11.4 19.4c2.7-.2 5.9-2.4 8.8-6.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg></span><span>CleanTrack</span></a><p>Cleaner neighbourhoods. Better coordinated action.</p><div class="footer-links"><a href="#platform">Platform</a><a href="#how-it-works">How it works</a><button data-open-login>Workspace sign in</button></div><small>© 2026 CleanTrack · Hackathon prototype</small></footer>
+  </main>
+
+  <main id="login-screen" class="login-screen hidden" aria-label="Sign in to CleanTrack">
+    <section class="login-visual">
+      <div class="brand brand-light"><span class="brand-mark">♻</span><span>CleanTrack</span></div>
+      <div class="login-copy">
+        <span class="eyebrow eyebrow-light">CLEANER STREETS. ACCOUNTABLE ACTION.</span>
+        <h1>Every report moves a neighbourhood forward.</h1>
+        <p>A connected workspace for residents, administrators and field teams to report, coordinate and verify waste cleanup.</p>
+      </div>
+      <div class="visual-stat-row">
+        <div><strong>01</strong><span>Report</span></div>
+        <div><strong>02</strong><span>Coordinate</span></div>
+        <div><strong>03</strong><span>Resolve</span></div>
+      </div>
+      <div class="login-orbit orbit-one"></div><div class="login-orbit orbit-two"></div>
+    </section>
+    <section class="login-panel-wrap">
+      <div class="login-panel">
+        <button id="close-login" class="auth-back-button" type="button">← Back to CleanTrack</button>
+        <div class="brand brand-dark"><span class="brand-mark">♻</span><span>CleanTrack</span></div>
+        <span class="eyebrow">WORKSPACE ACCESS</span>
+        <h2>Welcome back</h2>
+        <p class="muted">Sign in to continue to your CleanTrack workspace.</p>
+        <form id="login-form" class="stack-form">
+          <label>Email address<input id="login-email" type="email" autocomplete="username" required value="resident@cleantrack.demo"></label>
+          <label>Password<input id="login-password" type="password" autocomplete="current-password" required value="demo123"></label>
+          <button class="btn btn-primary btn-full" type="submit">Sign in <span>→</span></button>
+          <p id="login-error" class="form-error" role="alert"></p>
+        </form>
+        <div class="demo-access">
+          <div class="demo-heading"><span>DEMO ACCESS</span><span class="demo-pill">Password: demo123</span></div>
+          <button class="demo-user" data-demo="resident"><span class="avatar avatar-mint">R</span><span><b>Resident</b><small>resident@cleantrack.demo</small></span><span class="demo-arrow">↗</span></button>
+          <button class="demo-user" data-demo="admin"><span class="avatar avatar-blue">A</span><span><b>Administrator</b><small>admin@cleantrack.demo</small></span><span class="demo-arrow">↗</span></button>
+          <button class="demo-user" data-demo="worker"><span class="avatar avatar-amber">F</span><span><b>Field team</b><small>worker@cleantrack.demo</small></span><span class="demo-arrow">↗</span></button>
+        </div>
+        <p class="login-footnote">Hackathon prototype · Uses fictional demonstration records</p>
+      </div>
+    </section>
+  </main>
+
+  <div id="app-shell" class="app-shell hidden">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-brand brand brand-light"><span class="brand-mark">♻</span><span>CleanTrack</span></div>
+      <div class="workspace-label">WORKSPACE</div>
+      <nav id="sidebar-nav" class="sidebar-nav"></nav>
+      <div class="sidebar-bottom">
+        <div class="sidebar-help"><div class="help-icon">✦</div><b>Keep your area clean</b><p>Small actions make healthier neighbourhoods.</p></div>
+        <button id="logout-button" class="logout-button"><span>⇥</span> Sign out</button>
+        <div class="sidebar-version">CLEANTRACK · PROTOTYPE 1.0</div>
+      </div>
+    </aside>
+
+    <section class="main-column">
+      <header class="topbar">
+        <button id="mobile-menu" class="mobile-menu" aria-label="Open menu">☰</button>
+        <div class="breadcrumb"><span>Workspace</span><span class="crumb-sep">/</span><b id="page-title">Overview</b></div>
+        <div class="topbar-actions">
+          <button id="notification-button" class="icon-button notification-button" aria-label="Notifications">♧<i id="notification-dot" class="notification-dot hidden"></i></button>
+          <div class="topbar-user"><span class="avatar avatar-mint" id="header-avatar">R</span><span><b id="header-name">Resident</b><small id="header-role">Resident workspace</small></span></div>
+        </div>
+      </header>
+      <main id="page-content" class="page-content"></main>
+      <footer class="app-footer"><span>CleanTrack</span><span>Report clearly. Resolve responsibly.</span></footer>
+    </section>
+  </div>
+
+  <div id="detail-modal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="detail-title">
+    <section class="detail-panel"><div id="detail-content"></div></section>
+  </div>
+
+  <div id="notification-popover" class="notification-popover hidden"></div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/app.js"></script>
+</body>
+</html>
