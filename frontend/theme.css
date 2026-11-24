@@ -14,13 +14,6 @@
 .knob-moon { opacity: 0; transform: scale(.72) rotate(-35deg); }
 .knob-sun { opacity: 1; transform: scale(1) rotate(0); }
 .theme-toggle-auth { position: fixed; top: 20px; right: 24px; z-index: 1400; }
-.hero-register-row {
-  /* Center the primary Register action inside the first-screen hero. */
-  position: absolute; left: 0; right: 0; bottom: 48px; z-index: 6;
-  display: flex; align-items: center; justify-content: center; margin: 0; padding: 0;
-  pointer-events: none;
-}
-.hero-register-row .site-cta-register { pointer-events: auto; }
 .site-cta-register { min-width: 260px; min-height: 62px; padding: 0 38px; border-radius: 11px; font-size: 19px; font-weight: 900; letter-spacing: .2px; box-shadow: 0 13px 30px rgba(67,107,53,.24); }
 .site-cta-register span { font-size: 21px; }
 
@@ -132,7 +125,6 @@
   .site-header-actions { gap: 12px; }
   .theme-toggle { width: 62px; height: 36px; flex-basis: 62px; }
   :root[data-theme="dark"] .theme-toggle-knob { transform: translateX(24px); }
-  .hero-register-row { margin-top: 0; padding: 8px 0 0; }
   .site-cta-register { min-width: 190px; min-height: 54px; font-size: 15px; }
   :root[data-theme="dark"] .login-panel { padding: 26px 21px; }
 }
@@ -140,13 +132,11 @@
 /* First-screen Register placement on narrow screens: before the dashboard visual. */
 @media (max-width: 767px) {
   .hero-copy { grid-column: 1; grid-row: 1; }
-  .hero-register-row { position: relative; left: auto; right: auto; bottom: auto; transform: none; grid-column: 1; grid-row: 2; margin: 2px 0 0; }
-  .hero-visual { grid-column: 1; grid-row: 3; }
+  .hero-visual { grid-column: 1; grid-row: 2; }
   .site-cta-register { min-width: min(260px, 82vw); min-height: 58px; font-size: 17px; }
 }
 @media (min-width: 768px) and (max-height: 760px) {
   .hero-section { min-height: 610px; padding-top: 48px; padding-bottom: 104px; }
   .hero-copy { padding-top: 14px; padding-bottom: 14px; }
   .hero-copy h1 { margin-top: 18px; margin-bottom: 15px; }
-  .hero-register-row { bottom: 44px; }
 }

@@ -1,4 +1,7 @@
 const API = '/api';
+const BACKEND_WAKE_TTL_MS = 12 * 60 * 1000;
+let backendLastWarmAt = 0;
+let backendWakePromise = null;
 let currentUser = null;
 let csrfToken = null;
 let activePage = 'dashboard';
@@ -34,7 +37,48 @@ function showToast(message, type = 'success') {
   $('#toast-root').appendChild(toast);
   setTimeout(() => toast.remove(), 3600);
 }
+async function ensureBackendAwake() {
+  // A silent health request wakes a sleeping Render Free service when someone visits.
+  // The 12-minute freshness window avoids extra requests during normal active use.
+  if (Date.now() - backendLastWarmAt < BACKEND_WAKE_TTL_MS) return true;
+  if (backendWakePromise) return backendWakePromise;
+
+  backendWakePromise = (async () => {
+    const attempts = 8;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      const controller = new AbortController();
+      const timeoutId = window.setTimeout(() => controller.abort(), 9000);
+      try {
+        const response = await fetch(`${API}/health`, {
+          method: 'GET',
+          cache: 'no-store',
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json' },
+          signal: controller.signal
+        });
+        if (response.ok) {
+          backendLastWarmAt = Date.now();
+          return true;
+        }
+      } catch (_) {
+        // Wake-up failures are intentionally silent; the next attempt retries.
+      } finally {
+        window.clearTimeout(timeoutId);
+      }
+      if (attempt < attempts - 1) {
+        await new Promise(resolve => window.setTimeout(resolve, 3000));
+      }
+    }
+    return false;
+  })().finally(() => {
+    backendWakePromise = null;
+  });
+
+  return backendWakePromise;
+}
+
 async function api(path, options = {}) {
+  await ensureBackendAwake();
   const headers = new Headers(options.headers || {});
   if (csrfToken && !['GET','HEAD'].includes((options.method || 'GET').toUpperCase())) headers.set('X-CSRF-Token', csrfToken);
   if (options.body && !(options.body instanceof FormData) && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json');
@@ -42,6 +86,7 @@ async function api(path, options = {}) {
   let payload;
   try { payload = await response.json(); } catch { payload = {}; }
   if (!response.ok) throw new Error(payload.error || `Request failed (${response.status})`);
+  backendLastWarmAt = Date.now();
   return payload;
 }
 function setUser(user, token) {
@@ -580,6 +625,7 @@ document.addEventListener('click',event=>{if(!event.target.closest('#notificatio
 
   const loginScreen = document.getElementById('login-screen');
   const openLogin = () => {
+    void ensureBackendAwake();
     loginScreen?.classList.remove('hidden');
     document.body.classList.add('auth-open');
     window.CleanTrackIntro?.open?.();
