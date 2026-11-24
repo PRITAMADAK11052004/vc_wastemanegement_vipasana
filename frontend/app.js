@@ -45,6 +45,7 @@ async function api(path, options = {}) {
   return payload;
 }
 function setUser(user, token) {
+  window.CleanTrackIntro?.close?.();
   currentUser = user;
   csrfToken = token;
   $('#landing-page')?.classList.add('hidden');
@@ -458,9 +459,10 @@ document.addEventListener('click',event=>{if(!event.target.closest('#notificatio
   const openLogin = () => {
     loginScreen?.classList.remove('hidden');
     document.body.classList.add('auth-open');
-    document.getElementById('login-email')?.focus({ preventScroll: true });
+    window.CleanTrackIntro?.open?.();
   };
   const closeLogin = () => {
+    window.CleanTrackIntro?.close?.();
     loginScreen?.classList.add('hidden');
     document.body.classList.remove('auth-open');
   };

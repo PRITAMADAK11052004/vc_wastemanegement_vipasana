@@ -1,17 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#93C572">
+  <meta name="theme-color" content="#FFFFFF">
   <meta name="description" content="CleanTrack connects residents, administrators and collection teams through a clear waste issue reporting and resolution workflow.">
-  <title>CleanTrack — Cleaner neighbourhoods, coordinated action</title>
+  <title>CleanTrack — Civic Waste Operations Platform</title>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('cleantrack-theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+      } catch (_) {}
+    })();
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
   <link rel="stylesheet" href="/style.css">
   <link rel="stylesheet" href="/landing.css">
+  <link rel="stylesheet" href="/theme.css">
+  <link rel="stylesheet" href="/intro-animation.css">
+  <link rel="stylesheet" href="/workspace-theme.css">
 </head>
 <body>
   <div id="toast-root" class="toast-root" aria-live="polite"></div>
@@ -32,7 +43,12 @@
       </nav>
       <div class="site-header-actions">
         <button class="site-login-link" data-open-login>Sign in</button>
-        <button class="site-cta site-cta-small" data-open-login>Open workspace <span aria-hidden="true">↗</span></button>
+        <button class="theme-toggle" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Switch colour mode">
+          <span class="theme-toggle-side theme-toggle-sun" aria-hidden="true">☼</span>
+          <span class="theme-toggle-side theme-toggle-moon" aria-hidden="true">☾</span>
+          <span class="theme-toggle-knob" aria-hidden="true"><span class="knob-sun">☼</span><span class="knob-moon">☾</span></span>
+        </button>
+        
       </div>
       <button class="site-menu-toggle" id="site-menu-toggle" aria-label="Toggle navigation" aria-expanded="false">☰</button>
     </header>
@@ -42,8 +58,7 @@
         <div class="hero-kicker"><span class="kicker-dot"></span> A connected civic operations platform</div>
         <h1>Cleaner neighbourhoods.<br><em>Better coordinated</em> action.</h1>
         <p class="hero-lede">From the first report to verified clean-up, CleanTrack brings residents, administrators and collection teams into one clear, accountable workflow.</p>
-        <div class="hero-actions">
-          <button class="site-cta" data-open-login>Explore the workspace <span aria-hidden="true">→</span></button>
+        <div class="hero-actions hero-actions-discover">
           <a class="site-text-link" href="#platform">Discover what CleanTrack does <span aria-hidden="true">↓</span></a>
         </div>
         <div class="hero-trust-line"><span class="trust-mark">✓</span> Report clearly <span class="trust-separator">·</span> Coordinate responsibly <span class="trust-separator">·</span> Verify resolution</div>
@@ -68,6 +83,7 @@
         <div class="floating-note floating-note-top"><span class="floating-note-icon">✓</span><span><b>Accountable by design</b><small>Every action has a clear status</small></span></div>
         <div class="floating-note floating-note-bottom"><span class="floating-note-icon">⌖</span><span><b>Location-aware reporting</b><small>See issues in their neighbourhood</small></span></div>
       </div>
+      <div class="hero-register-row reveal-item"><button class="site-cta site-cta-register" data-open-login>Register <span aria-hidden="true">↗</span></button></div>
       <div class="hero-bottom-line"><span>ONE CONNECTED WORKFLOW</span><span>REPORT <b>→</b> COORDINATE <b>→</b> VERIFY</span></div>
     </section>
 
@@ -140,21 +156,264 @@
   </main>
 
   <main id="login-screen" class="login-screen hidden" aria-label="Sign in to CleanTrack">
-    <section class="login-visual">
-      <div class="brand brand-light"><span class="brand-mark">♻</span><span>CleanTrack</span></div>
-      <div class="login-copy">
+
+    <!-- ═══════════════ Intro: scene + flying leaf ═══════════════ -->
+    <div class="stage" aria-hidden="true">
+      <svg id="scene" viewBox="0 0 800 500">
+        <defs>
+          <linearGradient id="ribbonGrad" gradientUnits="userSpaceOnUse" x1="-180" y1="0" x2="960" y2="0">
+            <stop offset="0"  style="stop-color:var(--canopy-leaf)" stop-opacity="0"/>
+            <stop offset=".5" style="stop-color:var(--canopy-leaf)" stop-opacity="1"/>
+            <stop offset="1"  style="stop-color:var(--canopy-leaf)" stop-opacity="0"/>
+          </linearGradient>
+          <path id="leafP" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+        </defs>
+    
+        <!-- architectural horizon -->
+        <line class="ground" x1="130" y1="460" x2="670" y2="460"/>
+        <line class="ground faint" x1="260" y1="471" x2="540" y2="471"/>
+    
+        <!-- trunk + boughs -->
+        <path class="trunk" d="M393 460 L396 330 L404 330 L407 460 Z"/>
+        <g id="boughs">
+          <path class="bough" d="M400 408C420 392 445 372 468 350"/>
+          <path class="bough" d="M400 420C380 405 355 392 332 372"/>
+          <!-- decorative leaf on the left bough (the right one is the focal leaf, drawn in HTML) -->
+          <g class="branch-leaf-detail" transform="translate(319.8 386.6) rotate(-140) scale(.95) translate(-24 -24)">
+            <use href="#leafP" class="decor"/>
+            <path class="detail-rib" d="M24 5C24 16 22.5 29 19.8 43"/>
+            <path class="detail-veins" d="M23.5 13C19.5 12 16.5 10 13.8 8.5M23.5 13.5C28 13.2 31.5 11.4 34.2 9.3M22.8 20C18.7 18.6 15 16.2 12.2 13.6M22.8 20C28 19.1 32 16.7 35.6 13.2M21.9 27C17.5 24.9 14.5 22.2 11.7 19M21.9 27C26.7 25.4 31 22.8 36.4 18.4M21 34C17.2 31.2 14.7 28.6 12.8 25.6M21 34C25.2 32.1 29.3 29.3 33.7 25.2"/>
+          </g>
+        </g>
+    
+        <!-- layered crown (each layer sways with a slight lag) -->
+        <g class="crown">
+          <circle class="c-deep" cx="400" cy="230" r="118"/>
+          <circle class="c-deep" cx="322" cy="262" r="70"/>
+          <circle class="c-deep" cx="478" cy="262" r="70"/>
+        </g>
+        <g class="crown">
+          <circle class="c-mid" cx="400" cy="214" r="92"/>
+          <circle class="c-mid" cx="344" cy="250" r="58"/>
+          <circle class="c-mid" cx="456" cy="250" r="58"/>
+        </g>
+        <g class="crown">
+          <circle class="c-leaf" cx="392" cy="192" r="64"/>
+          <circle class="c-leaf" cx="352" cy="224" r="42"/>
+          <circle class="c-leaf" cx="436" cy="222" r="40"/>
+        </g>
+        <g class="crown">
+          <circle class="c-sage" cx="380" cy="172" r="30"/>
+          <circle class="c-sage" cx="414" cy="196" r="22"/>
+          <circle class="c-sage" cx="346" cy="208" r="18"/>
+        </g>
+    
+        <g class="crown canopy-detail" aria-hidden="true">
+          <g class="canopy-leaf canopy-tone-a" transform="translate(331 151) rotate(-32) scale(0.43) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(360 137) rotate(-8) scale(0.39) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(393 134) rotate(22) scale(0.4) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(426 151) rotate(48) scale(0.39) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(454 174) rotate(66) scale(0.38) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(304 190) rotate(-61) scale(0.38) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(333 190) rotate(-27) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(363 181) rotate(24) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(394 177) rotate(-10) scale(0.4) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(425 190) rotate(39) scale(0.37) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(458 211) rotate(65) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(486 239) rotate(83) scale(0.35) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(294 233) rotate(-74) scale(0.38) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(323 235) rotate(-28) scale(0.37) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(352 224) rotate(22) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(382 218) rotate(-45) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(411 220) rotate(25) scale(0.38) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(442 235) rotate(-18) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(470 251) rotate(54) scale(0.36) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(319 268) rotate(-53) scale(0.35) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(348 266) rotate(-12) scale(0.34) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(378 258) rotate(36) scale(0.35) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(408 257) rotate(-28) scale(0.35) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(438 269) rotate(28) scale(0.34) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(466 282) rotate(62) scale(0.32) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(354 302) rotate(-24) scale(0.31) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-b" transform="translate(385 291) rotate(25) scale(0.33) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-a" transform="translate(416 292) rotate(-35) scale(0.31) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+          <g class="canopy-leaf canopy-tone-c" transform="translate(444 302) rotate(18) scale(0.3) translate(-24 -24)">
+            <path class="canopy-blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/>
+            <path class="canopy-rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/>
+            <path class="canopy-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/>
+            <path class="canopy-glint" d="M24 6.8C30.1 11.4 34.2 17.6 33.4 23.2"/>
+          </g>
+        </g>
+    
+        <!-- wind ribbons -->
+        <path id="ribbon1" class="ribbon" pathLength="1" d="M-140 160C60 138 220 176 400 152S700 128 960 156"/>
+        <path id="ribbon2" class="ribbon" pathLength="1" d="M-180 196C20 178 200 210 380 190S680 168 940 192"/>
+      </svg>
+      <div id="leaves"></div>
+    </div>
+    
+    <div class="flier" id="flier" aria-hidden="true">
+      <div class="badge"></div>
+      <div class="glyph"><svg viewBox="0 0 48 48"><path class="blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/><path class="rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/><path class="leaf-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/></svg></div>
+    </div>
+    <button class="theme-toggle theme-toggle-auth" data-reveal=".28" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Switch colour mode"><span class="theme-toggle-side theme-toggle-sun" aria-hidden="true">☼</span><span class="theme-toggle-side theme-toggle-moon" aria-hidden="true">☾</span><span class="theme-toggle-knob" aria-hidden="true"><span class="knob-sun">☼</span><span class="knob-moon">☾</span></span></button>
+    <section class="login-visual" data-reveal="0">
+      <div class="brand brand-light" data-reveal=".06"><div class="logo-badge" id="logoBadge" aria-hidden="true">
+          <svg viewBox="0 0 48 48"><path class="blade" d="M24 3.5C33.2 8.1 40.2 17.2 37.7 26.8C35.5 35.6 27.8 42.2 19.7 45C11.7 39.4 7.3 29.7 9.7 20.3C11.7 12.3 17.5 6.6 24 3.5Z"/><path class="rib" d="M24 5.5C24 16 22.5 29 19.9 42.5"/><path class="leaf-veins" d="M23.6 13.2C19.5 12.1 16.5 10.2 13.8 8.6M23.6 13.2C28 13 31.4 11.3 34.1 9.2M23 20C18.8 18.8 15.1 16.3 12.2 13.5M23 20C28.1 19.1 32.1 16.6 35.6 13.1M22.2 27C17.9 25 14.6 22.1 11.8 19M22.2 27C27.1 25.5 31.3 22.8 36.3 18.4M21.2 34C17.2 31.2 14.7 28.6 12.8 25.6M21.2 34C25.4 32 29.4 29.2 33.7 25.2"/></svg>
+        </div><span>CleanTrack</span></div>
+      <div class="login-copy" data-reveal=".12">
         <span class="eyebrow eyebrow-light">CLEANER STREETS. ACCOUNTABLE ACTION.</span>
         <h1>Every report moves a neighbourhood forward.</h1>
         <p>A connected workspace for residents, administrators and field teams to report, coordinate and verify waste cleanup.</p>
       </div>
-      <div class="visual-stat-row">
+      <div class="visual-stat-row" data-reveal=".2">
         <div><strong>01</strong><span>Report</span></div>
         <div><strong>02</strong><span>Coordinate</span></div>
         <div><strong>03</strong><span>Resolve</span></div>
       </div>
       <div class="login-orbit orbit-one"></div><div class="login-orbit orbit-two"></div>
     </section>
-    <section class="login-panel-wrap">
+    <section class="login-panel-wrap" data-reveal=".12">
       <div class="login-panel">
         <button id="close-login" class="auth-back-button" type="button">← Back to CleanTrack</button>
         <div class="brand brand-dark"><span class="brand-mark">♻</span><span>CleanTrack</span></div>
@@ -195,6 +454,7 @@
         <button id="mobile-menu" class="mobile-menu" aria-label="Open menu">☰</button>
         <div class="breadcrumb"><span>Workspace</span><span class="crumb-sep">/</span><b id="page-title">Overview</b></div>
         <div class="topbar-actions">
+          <button class="theme-toggle theme-toggle-workspace" type="button" data-theme-toggle role="switch" aria-checked="false" aria-label="Switch to dark mode" title="Switch colour mode"><span class="theme-toggle-side theme-toggle-sun" aria-hidden="true">☼</span><span class="theme-toggle-side theme-toggle-moon" aria-hidden="true">☾</span><span class="theme-toggle-knob" aria-hidden="true"><span class="knob-sun">☼</span><span class="knob-moon">☾</span></span></button>
           <button id="notification-button" class="icon-button notification-button" aria-label="Notifications">♧<i id="notification-dot" class="notification-dot hidden"></i></button>
           <div class="topbar-user"><span class="avatar avatar-mint" id="header-avatar">R</span><span><b id="header-name">Resident</b><small id="header-role">Resident workspace</small></span></div>
         </div>
@@ -211,6 +471,8 @@
   <div id="notification-popover" class="notification-popover hidden"></div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="/intro-exact.js"></script>
+  <script src="/theme.js"></script>
   <script src="/app.js"></script>
 </body>
 </html>
