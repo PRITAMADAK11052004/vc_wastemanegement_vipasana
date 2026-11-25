@@ -6,6 +6,38 @@
   <meta name="theme-color" content="#FFFFFF">
   <meta name="description" content="CleanTrack connects residents, administrators and collection teams through a clear waste issue reporting and resolution workflow.">
   <title>CleanTrack — Civic Waste Operations Platform</title>
+  <!-- Silent Render wake request: runs immediately during HTML parsing, before external scripts. -->
+  <script>
+    (function () {
+      'use strict';
+      var backendHealthUrl = 'https://vc-wastemanegement-vipasana.onrender.com/api/health';
+
+      function wakeRender() {
+        try {
+          var request = window.fetch(
+            backendHealthUrl + '?__cleantrack_wake=' + Date.now(),
+            {
+              method: 'GET',
+              mode: 'no-cors',
+              cache: 'no-store',
+              credentials: 'omit',
+              keepalive: true
+            }
+          );
+          if (request && typeof request.catch === 'function') {
+            request.catch(function () {});
+          }
+        } catch (_) {
+          // Keep backend prewarming invisible; the existing API health polling handles readiness.
+        }
+      }
+
+      wakeRender();
+      window.addEventListener('pageshow', function (event) {
+        if (event.persisted) wakeRender();
+      });
+    })();
+  </script>
   <link rel="icon" type="image/png" href="/assets/cleantrack-leaf-logo.png">
   <script>
     (function () {
