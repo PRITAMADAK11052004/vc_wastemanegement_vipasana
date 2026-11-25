@@ -2,6 +2,7 @@ const API = '/api';
 const BACKEND_WAKE_TTL_MS = 12 * 60 * 1000;
 let backendLastWarmAt = 0;
 let backendWakePromise = null;
+const backendWakeSubscribers = new Set();
 let currentUser = null;
 let csrfToken = null;
 let activePage = 'dashboard';
@@ -38,17 +39,24 @@ function showToast(message, type = 'success') {
   $('#toast-root').appendChild(toast);
   setTimeout(() => toast.remove(), 3600);
 }
-async function ensureBackendAwake() {
+async function ensureBackendAwake(options = {}) {
   // A silent health request wakes a sleeping Render Free service when someone visits.
-  // The 12-minute freshness window avoids extra requests during normal active use.
+  // A sign-in overlay may subscribe to retries while sharing the same wake request.
+  const onRetry = typeof options.onRetry === 'function' ? options.onRetry : null;
   if (Date.now() - backendLastWarmAt < BACKEND_WAKE_TTL_MS) return true;
+  if (onRetry) backendWakeSubscribers.add(onRetry);
   if (backendWakePromise) return backendWakePromise;
 
   backendWakePromise = (async () => {
-    const attempts = 8;
-    for (let attempt = 0; attempt < attempts; attempt++) {
+    const startedAt = Date.now();
+    const overallDeadlineMs = 120000;
+    const attemptTimeoutMs = 12000;
+    const retryDelayMs = 3000;
+    let retries = 0;
+
+    while (Date.now() - startedAt < overallDeadlineMs) {
       const controller = new AbortController();
-      const timeoutId = window.setTimeout(() => controller.abort(), 9000);
+      const timeoutId = window.setTimeout(() => controller.abort(), attemptTimeoutMs);
       try {
         const response = await fetch(`${API}/health`, {
           method: 'GET',
@@ -62,17 +70,22 @@ async function ensureBackendAwake() {
           return true;
         }
       } catch (_) {
-        // Wake-up failures are intentionally silent; the next attempt retries.
+        // Transient 502/503/504, timeouts and network failures are retried silently.
       } finally {
         window.clearTimeout(timeoutId);
       }
-      if (attempt < attempts - 1) {
-        await new Promise(resolve => window.setTimeout(resolve, 3000));
-      }
+
+      retries += 1;
+      backendWakeSubscribers.forEach(listener => {
+        try { listener(retries); } catch (_) {}
+      });
+      if (Date.now() - startedAt + retryDelayMs >= overallDeadlineMs) break;
+      await new Promise(resolve => window.setTimeout(resolve, retryDelayMs));
     }
     return false;
   })().finally(() => {
     backendWakePromise = null;
+    backendWakeSubscribers.clear();
   });
 
   return backendWakePromise;
@@ -624,8 +637,121 @@ async function toggleNotifications(){
   }catch(e){showToast(e.message,'error');}
 }
 
+const loginWake = (() => {
+  const panel = $('.login-panel');
+  const overlay = $('#login-wake');
+  const submitButton = $('#login-form button[type="submit"]');
+  const fill = $('#login-wake-fill');
+  const rail = $('#login-wake-rail');
+  const cols = [$('#login-wake-n1'), $('#login-wake-n2'), $('#login-wake-n3')];
+  const statusLine = $('#login-wake-status');
+  const retryBadge = $('#login-wake-retry');
+  const note = $('#login-wake-note');
+  const STATUS = {
+    en: ['Connecting to CleanTrack civic servers...', 'Waking workspace instance...', 'Syncing ward reports & role permissions...'],
+    hi: ['CleanTrack नागरिक सर्वर से जुड़ रहे हैं...', 'वर्कस्पेस सर्वर शुरू हो रहा है...', 'वार्ड रिपोर्ट और भूमिका अनुमतियाँ समन्वयित हो रही हैं...'],
+    bn: ['CleanTrack নাগরিক সার্ভারের সঙ্গে সংযোগ করা হচ্ছে...', 'ওয়ার্কস্পেস সার্ভার চালু হচ্ছে...', 'ওয়ার্ড রিপোর্ট ও ভূমিকার অনুমতি সিঙ্ক করা হচ্ছে...']
+  };
+  const COPY = {
+    en: { caps: ['Wake instance', 'Verify credentials', 'Sync ward ledger'], note: 'First wake may take ~30s · Retrying automatically', retry: 'Please wait - loading', ready: 'Workspace ready. Entering CleanTrack...' },
+    hi: { caps: ['सर्वर शुरू करें', 'प्रमाण-पत्र सत्यापित करें', 'वार्ड रिकॉर्ड सिंक करें'], note: 'पहली बार शुरू होने में लगभग 30 सेकंड लग सकते हैं · स्वचालित पुनः प्रयास जारी', retry: 'कृपया प्रतीक्षा करें - लोड हो रहा है', ready: 'वर्कस्पेस तैयार है। CleanTrack में प्रवेश हो रहा है...' },
+    bn: { caps: ['সার্ভার চালু করুন', 'পরিচয় যাচাই করুন', 'ওয়ার্ড রেকর্ড সিঙ্ক করুন'], note: 'প্রথমবার চালু হতে প্রায় ৩০ সেকেন্ড লাগতে পারে · স্বয়ংক্রিয়ভাবে আবার চেষ্টা করা হচ্ছে', retry: 'অনুগ্রহ করে অপেক্ষা করুন - লোড হচ্ছে', ready: 'ওয়ার্কস্পেস প্রস্তুত। CleanTrack-এ প্রবেশ করা হচ্ছে...' }
+  };
+  const CONFIG = { statusRotateMs: 8000, node2AtMs: 10000, fillAsymptote: 0.85, fillTauMs: 8500 };
+  const sleep = ms => new Promise(resolve => window.setTimeout(resolve, ms));
+  let running = false, raf = 0, statusTimer = 0, statusIdx = 0, startedAt = 0, readyText = false;
+  let activeLanguage = 'en';
+
+  function languageCopy() {
+    const lang = window.CleanTrackI18n?.get?.() || document.documentElement.lang || 'en';
+    return ['hi', 'bn'].includes(lang) ? lang : 'en';
+  }
+  function applyLanguage() {
+    activeLanguage = languageCopy();
+    const copy = COPY[activeLanguage];
+    $('#login-wake-cap1').textContent = copy.caps[0];
+    $('#login-wake-cap2').textContent = copy.caps[1];
+    $('#login-wake-cap3').textContent = copy.caps[2];
+    note.textContent = copy.note;
+    retryBadge.textContent = copy.retry;
+    statusLine.textContent = readyText ? copy.ready : STATUS[activeLanguage][statusIdx];
+  }
+  function setFill(progress) {
+    fill.style.transform = `scaleX(${progress})`;
+    rail.setAttribute('aria-valuenow', String(Math.round(progress * 100)));
+  }
+  function tick() {
+    const elapsed = performance.now() - startedAt;
+    setFill(CONFIG.fillAsymptote * (1 - Math.exp(-elapsed / CONFIG.fillTauMs)));
+    if (elapsed >= CONFIG.node2AtMs) cols[1].classList.add('lit');
+    raf = requestAnimationFrame(tick);
+  }
+  function crossfade(text) {
+    statusLine.classList.add('fading');
+    window.setTimeout(() => {
+      statusLine.textContent = text;
+      statusLine.classList.remove('fading');
+    }, 400);
+  }
+  function show() {
+    if (running || !overlay) return;
+    running = true;
+    readyText = false;
+    submitButton.disabled = true;
+    submitButton.setAttribute('aria-busy', 'true');
+    [...panel.children].filter(child => child !== overlay).forEach(child => { child.inert = true; });
+    $('#login-error').textContent = '';
+    statusIdx = 0;
+    applyLanguage();
+    retryBadge.classList.remove('show');
+    fill.classList.remove('snap');
+    setFill(0);
+    cols.forEach(col => col.classList.remove('lit', 'done'));
+    cols[0].classList.add('lit');
+    overlay.classList.add('on');
+    overlay.setAttribute('aria-hidden', 'false');
+    startedAt = performance.now();
+    raf = requestAnimationFrame(tick);
+    statusTimer = window.setInterval(() => {
+      if (statusIdx < STATUS[activeLanguage].length - 1) {
+        statusIdx += 1;
+        crossfade(STATUS[activeLanguage][statusIdx]);
+      }
+    }, CONFIG.statusRotateMs);
+  }
+  function retry() { retryBadge.classList.add('show'); }
+  async function ready() {
+    cancelAnimationFrame(raf);
+    window.clearInterval(statusTimer);
+    fill.classList.add('snap');
+    setFill(1);
+    cols.forEach(col => col.classList.add('lit', 'done'));
+    readyText = true;
+    applyLanguage();
+    statusLine.classList.add('fading');
+    await sleep(250);
+    statusLine.textContent = COPY[activeLanguage].ready;
+    statusLine.classList.remove('fading');
+    await sleep(650);
+  }
+  function hide() {
+    cancelAnimationFrame(raf);
+    window.clearInterval(statusTimer);
+    overlay.classList.remove('on');
+    overlay.setAttribute('aria-hidden', 'true');
+    [...panel.children].filter(child => child !== overlay).forEach(child => { child.inert = false; });
+    submitButton.disabled = false;
+    submitButton.removeAttribute('aria-busy');
+    running = false;
+  }
+  window.addEventListener('cleantrack:languagechange', applyLanguage);
+  window.CleanTrackLoginWake = { hide };
+  return { show, retry, ready, hide, isRunning: () => running };
+})();
+
 $('#login-form').addEventListener('submit',async event=>{
   event.preventDefault();
+  if (loginWake.isRunning()) return;
   const error = $('#login-error');
   error.textContent = '';
   const email = String($('#login-email').value || '').trim();
@@ -640,11 +766,19 @@ $('#login-form').addEventListener('submit',async event=>{
     $('#login-password').focus();
     return;
   }
+  loginWake.show();
   try {
+    const backendReady = await ensureBackendAwake({ onRetry: loginWake.retry });
+    if (!backendReady) throw Object.assign(new Error('backend-wake-timeout'), { kind: 'wake-timeout' });
+    await loginWake.ready();
     const d = await api('/login', {method:'POST', body:JSON.stringify({email, password})});
+    loginWake.hide();
     setUser(d.user, d.csrf_token);
   } catch (e) {
-    error.textContent = e.message;
+    loginWake.hide();
+    error.textContent = e.kind === 'wake-timeout'
+      ? (window.CleanTrackI18n?.translate?.('The server is taking longer than usual. Please try again in a moment.') || 'The server is taking longer than usual. Please try again in a moment.')
+      : e.message;
   }
 });
 $$('[data-demo]').forEach(btn=>btn.addEventListener('click',()=>{
@@ -677,6 +811,7 @@ document.addEventListener('click',event=>{if(!event.target.closest('#notificatio
     window.CleanTrackIntro?.open?.();
   };
   const closeLogin = () => {
+    window.CleanTrackLoginWake?.hide?.();
     window.CleanTrackIntro?.close?.();
     loginScreen?.classList.add('hidden');
     document.body.classList.remove('auth-open');

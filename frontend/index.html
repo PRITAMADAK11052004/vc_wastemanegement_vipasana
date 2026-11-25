@@ -28,6 +28,7 @@
   <link rel="stylesheet" href="/typography.css">
   <link rel="stylesheet" href="/i18n.css">
   <link rel="stylesheet" href="/brand-logo.css">
+  <link rel="stylesheet" href="/login-wake.css">
 </head>
 <body>
   <div id="toast-root" class="toast-root" aria-live="polite"></div>
@@ -433,6 +434,38 @@
           <button class="demo-user" data-demo="resident"><span class="avatar avatar-mint">R</span><span><b>Resident</b><small>resident@cleantrack.demo</small></span><span class="demo-arrow">↗</span></button>
           <button class="demo-user" data-demo="admin"><span class="avatar avatar-blue">A</span><span><b>Administrator</b><small>admin@cleantrack.demo</small></span><span class="demo-arrow">↗</span></button>
           <button class="demo-user" data-demo="worker"><span class="avatar avatar-amber">F</span><span><b>Field team</b><small>worker@cleantrack.demo</small></span><span class="demo-arrow">↗</span></button>
+        </div>
+        <div class="wake" id="login-wake" role="status" aria-live="polite" aria-hidden="true">
+          <div class="radar" aria-hidden="true">
+            <svg class="rings" viewBox="0 0 88 88">
+              <circle class="ring-outer" cx="44" cy="44" r="43"/>
+              <circle class="ring-inner" cx="44" cy="44" r="34"/>
+              <g class="orbit">
+                <g transform="translate(78 44) rotate(-35) scale(.58) translate(-12 -12)">
+                  <path class="leaf" vector-effect="non-scaling-stroke" d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                  <path class="leaf-vein" vector-effect="non-scaling-stroke" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+                </g>
+              </g>
+            </svg>
+            <div class="badge">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path class="badge-leaf" d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+                <path class="badge-leaf-vein" d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+              </svg>
+            </div>
+          </div>
+          <div class="rail" id="login-wake-rail" role="progressbar" aria-label="Sign-in progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+            <div class="rail-track"></div>
+            <div class="rail-fill" id="login-wake-fill"></div>
+            <div class="stage-col" id="login-wake-n1"><span class="node"></span><span class="cap" id="login-wake-cap1">Wake instance</span></div>
+            <div class="stage-col" id="login-wake-n2"><span class="node"></span><span class="cap" id="login-wake-cap2">Verify credentials</span></div>
+            <div class="stage-col" id="login-wake-n3"><span class="node"></span><span class="cap" id="login-wake-cap3">Sync ward ledger</span></div>
+          </div>
+          <div class="status">
+            <p class="status-line" id="login-wake-status">Connecting to CleanTrack civic servers...</p>
+            <p class="status-note" id="login-wake-note">First wake may take ~30s · Retrying automatically</p>
+            <span class="retry-badge" id="login-wake-retry">Please wait - loading</span>
+          </div>
         </div>
       </div>
     </section>

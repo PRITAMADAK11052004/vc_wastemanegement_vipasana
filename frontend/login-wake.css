@@ -1,0 +1,114 @@
+/* CleanTrack sign-in wake overlay.
+   Visual system and motion styling adapted directly from the user-supplied
+   cleantrack-login-refined-standalone.html. Scoped to the login panel only. */
+.login-panel {
+  --wake-overlay: rgba(248, 250, 246, .88);
+  --wake-border: #D5E0D2;
+  --wake-ring-outer: #B7C9A2;
+  --wake-track: #D5E0D2;
+  --wake-node-bg: #F8FAF6;
+  --wake-glow: 136, 191, 110;
+  --wake-fill: #7BC462;
+  --wake-ink: #1C2B1A;
+  --wake-muted: #526350;
+  --wake-badge: #88BF6E;
+  --wake-badge-ink: #1C2B1A;
+  --wake-badge-border: transparent;
+  --wake-leaf-fill: rgba(255, 255, 255, .2);
+}
+:root[data-theme="dark"] .login-panel {
+  --wake-overlay: rgba(22, 32, 22, .88);
+  --wake-border: #2A3B28;
+  --wake-ring-outer: #2A3B28;
+  --wake-track: #2A3B28;
+  --wake-node-bg: #162016;
+  --wake-glow: 123, 196, 98;
+  --wake-fill: #7BC462;
+  --wake-ink: #F1F5F0;
+  --wake-muted: #9EB09B;
+  --wake-badge: #1D2E1C;
+  --wake-badge-ink: #7BC462;
+  --wake-badge-border: #2A3B28;
+  --wake-leaf-fill: rgba(123, 196, 98, .2);
+}
+.login-panel .wake {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px;
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 44px 28px 28px;
+  background: var(--wake-overlay);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--wake-border);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity .4s ease, visibility 0s linear .4s;
+  color: var(--wake-ink);
+}
+.login-panel .wake.on {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transition: opacity .4s ease, visibility 0s;
+}
+.login-panel .wake .radar { position: relative; width: 88px; height: 88px; flex: none; }
+.login-panel .wake .radar svg.rings { position: absolute; inset: 0; width: 88px; height: 88px; overflow: visible; }
+.login-panel .wake .ring-outer,
+.login-panel .wake .ring-inner { transform-origin: 44px 44px; fill: none; }
+.login-panel .wake .ring-outer { stroke: var(--wake-ring-outer); stroke-width: 1.5; stroke-dasharray: 3 7; stroke-linecap: round; animation: cleantrack-wake-cw 36s linear infinite; }
+.login-panel .wake .ring-inner { stroke: #7BC462; stroke-width: 1.75; stroke-linecap: round; stroke-dasharray: 70 144; animation: cleantrack-wake-ccw 24s linear infinite; }
+.login-panel .wake .orbit { transform-origin: 44px 44px; animation: cleantrack-wake-ccw 24s linear infinite; }
+.login-panel .wake .leaf { fill: var(--wake-leaf-fill); stroke: #7BC462; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.login-panel .wake .leaf-vein { fill: none; stroke: #7BC462; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes cleantrack-wake-cw { to { transform: rotate(360deg); } }
+@keyframes cleantrack-wake-ccw { to { transform: rotate(-360deg); } }
+.login-panel .wake .badge {
+  position: absolute; left: 50%; top: 50%; width: 46px; height: 46px; margin: -23px 0 0 -23px;
+  border-radius: 13px; display: grid; place-items: center;
+  background: var(--wake-badge); color: var(--wake-badge-ink);
+  border: 1px solid var(--wake-badge-border);
+  animation: cleantrack-wake-breathe 3s ease-in-out infinite;
+}
+.login-panel .wake .badge svg { width: 22px; height: 22px; }
+.login-panel .wake .badge-leaf { fill: var(--wake-leaf-fill); stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+.login-panel .wake .badge-leaf-vein { fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; }
+@keyframes cleantrack-wake-breathe {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(var(--wake-glow), 0), 0 0 12px 1px rgba(var(--wake-glow), .18); }
+  50% { box-shadow: 0 0 0 6px rgba(var(--wake-glow), .09), 0 0 24px 5px rgba(var(--wake-glow), .38); }
+}
+.login-panel .wake .rail { position: relative; width: min(320px, 100%); margin-top: 26px; display: grid; grid-template-columns: repeat(3, 1fr); }
+.login-panel .wake .rail-track,
+.login-panel .wake .rail-fill { position: absolute; top: 6px; left: 16.667%; right: 16.667%; height: 2px; border-radius: 2px; }
+.login-panel .wake .rail-track { background: var(--wake-track); }
+.login-panel .wake .rail-fill { background: var(--wake-fill); transform: scaleX(0); transform-origin: left center; will-change: transform; }
+.login-panel .wake .rail-fill.snap { transition: transform .25s cubic-bezier(.2, .8, .2, 1); }
+.login-panel .wake .stage-col { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 9px; }
+.login-panel .wake .node { position: relative; width: 14px; height: 14px; border-radius: 50%; background: var(--wake-node-bg); border: 2px solid var(--wake-track); transition: background .35s, border-color .35s, box-shadow .35s; }
+.login-panel .wake .node::after {
+  content: ""; position: absolute; left: 50%; top: 50%; width: 3px; height: 6px;
+  border: solid #0E140E; border-width: 0 1.6px 1.6px 0;
+  transform: translate(-50%, -62%) rotate(45deg); opacity: 0; transition: opacity .25s .1s;
+}
+.login-panel .wake .stage-col.lit .node { background: var(--wake-fill); border-color: var(--wake-fill); box-shadow: 0 0 0 4px rgba(var(--wake-glow), .16); }
+.login-panel .wake .stage-col.done .node::after { opacity: 1; }
+.login-panel .wake .stage-col .cap { font-size: 11.5px; color: var(--wake-muted); text-align: center; transition: color .35s; }
+.login-panel .wake .stage-col.lit .cap { color: var(--wake-ink); }
+.login-panel .wake .status { margin-top: 28px; text-align: center; width: 100%; }
+.login-panel .wake .status-line { margin: 0; min-height: 22px; font-size: 15px; font-weight: 500; color: var(--wake-ink); transition: opacity .4s ease; }
+.login-panel .wake .status-line.fading { opacity: 0; }
+.login-panel .wake .status-note { margin: 8px 0 0; font-size: 12.5px; color: var(--wake-muted); }
+.login-panel .wake .retry-badge {
+  display: inline-block; margin-top: 14px; padding: 3px 11px; font-size: 11.5px; color: var(--wake-muted);
+  font-variant-numeric: tabular-nums; border: 1px solid var(--wake-border); border-radius: 999px;
+  opacity: 0; transition: opacity .4s;
+}
+.login-panel .wake .retry-badge.show { opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .login-panel .wake .ring-outer, .login-panel .wake .ring-inner, .login-panel .wake .orbit, .login-panel .wake .badge { animation: none; }
+  .login-panel .wake, .login-panel .wake.on, .login-panel .wake .status-line { transition-duration: .01s; }
+}
